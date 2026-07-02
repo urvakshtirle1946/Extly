@@ -724,7 +724,11 @@ export default function EditorPage() {
         return
       }
       console.error('Streaming error:', err)
-      const isCreditError = err.message.toLowerCase().includes('credits') || err.message.toLowerCase().includes('limit reached')
+      const errStr = String(err?.message || '')
+      const isCreditError = 
+        errStr.toLowerCase().includes('credits') || 
+        errStr.toLowerCase().includes('limit reached') || 
+        errStr.toLowerCase().includes('403')
       setError(err.message || 'Streaming failed')
       setStatus('failed')
       
