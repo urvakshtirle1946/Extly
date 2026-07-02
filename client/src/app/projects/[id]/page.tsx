@@ -724,9 +724,24 @@ export default function EditorPage() {
         return
       }
       console.error('Streaming error:', err)
+      const isCreditError = err.message.toLowerCase().includes('credits') || err.message.toLowerCase().includes('limit reached')
       setError(err.message || 'Streaming failed')
       setStatus('failed')
-      setMessages((prev) => prev.filter((m) => m.id !== assistantMessageId))
+      
+      if (isCreditError) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantMessageId
+              ? { 
+                  ...m, 
+                  content: "⚠️ **Daily Build Credits Exhausted**\n\nYou have used your 5 free build credits for today. Please [upgrade your plan](/dashboard?tab=billing) to continue building and deploying extensions." 
+                }
+              : m
+          )
+        )
+      } else {
+        setMessages((prev) => prev.filter((m) => m.id !== assistantMessageId))
+      }
     } finally {
       abortControllerRef.current = null
     }
