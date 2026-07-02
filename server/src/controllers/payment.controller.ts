@@ -1,12 +1,12 @@
-import { Response } from 'express' 
+import { Response } from 'express'
 import Razorpay from 'razorpay'
 import crypto from 'crypto'
 import { AuthenticatedRequest } from '../middleware/auth.middleware'
 import { db } from '../config/db'
 
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
+  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_T8VDrPsIxLDRBL',
+  key_secret: process.env.RAZORPAY_KEY_SECRET || '60aylIzahkwbV3MVyu41YBi7',
 })
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -70,7 +70,7 @@ export async function handleVerifyPayment(req: AuthenticatedRequest, res: Respon
   try {
     const body = `${razorpay_order_id}|${razorpay_payment_id}`
     const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || '60aylIzahkwbV3MVyu41YBi7')
       .update(body)
       .digest('hex')
 
