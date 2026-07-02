@@ -647,12 +647,23 @@ export default function EditorPage() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errMsg = errorData.error || `HTTP error ${response.status}`;
-        if (response.status === 403 || errMsg.toLowerCase().includes('credits') || errMsg.toLowerCase().includes('limit reached')) {
+        const errorData = await response.json().catch(() => ({}))
+        const errMsg = errorData.error || `HTTP error ${response.status}`
+        
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantMessageId
+              ? { ...m, content: `⚠️ **Credits Exhausted**\n\nYou've used all your build credits. Purchase more to continue building.` }
+              : m
+          )
+        )
+        
+        if (response.status === 403) {
           setIsCreditsModalOpen(true)
         }
-        throw new Error(errMsg);
+        
+        setStatus('idle')
+        return
       }
 
       if (!response.body) throw new Error('No response body')
