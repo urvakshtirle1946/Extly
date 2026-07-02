@@ -30,7 +30,8 @@ export async function handleGenerate(req: AuthenticatedRequest, res: Response) {
         [userId]
       )
       const count = todayResult.rows[0]?.count || 0
-      if (count >= 5) {
+      const DAILY_LIMIT = process.env.NODE_ENV === 'production' ? 5 : 999
+      if (count >= DAILY_LIMIT) {
         return res.status(403).json({ error: 'Daily build credits limit reached. Please upgrade your plan.' })
       }
     }

@@ -736,10 +736,8 @@ export default function EditorPage() {
         }
       }
     } catch (err: any) {
-      if (err.name === 'AbortError') {
-        console.log('Generation aborted by user.')
-        return
-      }
+      if (err.name === 'AbortError') return
+
       console.error('Streaming error:', err)
       const errStr = String(err?.message || err || 'Streaming failed')
       const isCreditError = 
@@ -751,11 +749,11 @@ export default function EditorPage() {
       
       const errorMessage = isCreditError
         ? "⚠️ **Daily Build Credits Exhausted**\n\nYou have used your 5 free build credits for today. Please [upgrade your plan](/dashboard?tab=billing) to continue building and deploying extensions."
-        : `❌ **Generation Failed**\n\nAn error occurred during response generation: \`${errStr}\`. Please try again.`;
+        : `❌ **Failed:** ${errStr}`;
 
       setMessages((prev) =>
         prev.map((m) =>
-          m.id === assistantMessageId
+          m.id === assistantMessageId && m.content === ''
             ? { ...m, content: errorMessage }
             : m
         )
