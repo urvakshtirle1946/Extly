@@ -1,7 +1,8 @@
-import { Response } from 'express'
+import { Response } from 'express' 
 import Razorpay from 'razorpay'
 import crypto from 'crypto'
 import { AuthenticatedRequest } from '../middleware/auth.middleware'
+import { db } from '../config/db'
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID!,
@@ -79,8 +80,41 @@ export async function handleVerifyPayment(req: AuthenticatedRequest, res: Respon
     }
 
     // ✅ Signature verified — payment is genuine
-    // TODO: Update user plan in DB here once payment is confirmed
-    // e.g.: await db.query("UPDATE users SET plan = 'pro' WHERE id = $1", [userId])
+    const orderDetails: any = await razorpay.orders.fetch(razorpay_order_id)
+    const amountInPaise = orderDetails.amount || 0
+    const amountInINR = amountInPaise / 100
+
+    // Determine purchased credits based on price
+    let creditsToGrant = 20
+    if (amountInINR === 5) creditsToGrant = 20
+    else if (amountInINR === 24) creditsToGrant = 100
+    else if (amountInINR === 49) creditsToGrant = 200
+    else if (amountInINR === 99) creditsToGrant = 400
+    else if (amountInINR === 199) creditsToGrant = 800
+    else if (amountInINR === 299) creditsToGrant = 1200
+    else if (amountInINR === 499) creditsToGrant = 2000
+    else if (amountInINR === 749) creditsToGrant = 3000
+    else if (amountInINR === 999) creditsToGrant = 4000
+    else if (amountInINR === 1249) creditsToGrant = 5000
+    else if (amountInINR === 1849) creditsToGrant = 7500
+    // Business tiers
+    else if (amountInINR === 50) creditsToGrant = 100
+    else if (amountInINR === 99) creditsToGrant = 200
+    else if (amountInINR === 249) creditsToGrant = 500
+    else if (amountInINR === 499) creditsToGrant = 1000
+    else if (amountInINR === 999) creditsToGrant = 2000
+    // Fallback if price doesn't match standard packages
+    else creditsToGrant = Math.round(amountInINR * 4)
+
+    // Update user plan and add credits balance
+    await db.query(
+      `UPDATE users 
+       SET plan = 'pro', 
+           total_credits = COALESCE(total_credits, 0) + $1, 
+           used_credits = 0 
+       WHERE id = $2`,
+      [creditsToGrant, userId]
+    )
 
     return res.status(200).json({
       success: true,

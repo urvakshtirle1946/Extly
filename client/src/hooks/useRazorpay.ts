@@ -89,7 +89,7 @@ export function useRazorpay() {
 
       // 4. Open Razorpay modal
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_T8VDrPsIxLDRBL',
         amount: order.amount,
         currency: order.currency,
         name,

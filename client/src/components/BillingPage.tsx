@@ -99,23 +99,12 @@ export default function BillingPage() {
       name: 'Extly',
       description: `Pro Plan – ${formatCredits(activePro.credits)}`,
       onSuccess: async ({ payment_id, order_id }) => {
-        // Payment verified — now upgrade plan in DB
         try {
-          const res = await apiFetch('/api/usage/upgrade', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ plan: 'pro' })
-          });
-          if (res.status === 'success') {
-            setActivePlan('pro');
-            await loadUsageDetails();
-            setActiveSelector(null);
-            alert(`🎉 Plan upgraded successfully! Payment ID: ${payment_id}`);
-          } else {
-            alert('Payment succeeded but plan upgrade failed. Contact support with Payment ID: ' + payment_id);
-          }
+          await loadUsageDetails();
+          setActiveSelector(null);
+          alert(`🎉 Plan upgraded successfully! Payment ID: ${payment_id}`);
         } catch (err: any) {
-          alert('Payment succeeded but plan upgrade failed. Contact support with Payment ID: ' + payment_id);
+          alert('Failed to refresh plan state. Please reload the page.');
         } finally {
           setIsUpgrading(false);
         }
