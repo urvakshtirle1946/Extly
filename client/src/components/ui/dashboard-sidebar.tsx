@@ -94,24 +94,22 @@ function WorkspaceSwitcher({ selected, onSelect, userEmail }: { selected?: strin
   const [remainingCredits, setRemainingCredits] = useState(5);
   const apiFetch = useApiFetch();
 
-  // Sync remaining credits and plan state when switcher is opened
+  // Sync remaining credits and plan state on mount and when switcher is opened
   useEffect(() => {
-    if (isOpen) {
-      const loadUsage = async () => {
-        try {
-          const data = await apiFetch('/api/usage');
-          if (data.plan) {
-            setActivePlan(data.plan);
-          }
-          if (data.dailyCredits) {
-            setRemainingCredits(data.dailyCredits.remaining);
-          }
-        } catch (err) {
-          console.error('Failed to load usage in sidebar:', err);
+    const loadUsage = async () => {
+      try {
+        const data = await apiFetch('/api/usage');
+        if (data.plan) {
+          setActivePlan(data.plan);
         }
-      };
-      loadUsage();
-    }
+        if (data.dailyCredits) {
+          setRemainingCredits(data.dailyCredits.remaining);
+        }
+      } catch (err) {
+        console.error('Failed to load usage in sidebar:', err);
+      }
+    };
+    loadUsage();
   }, [isOpen]);
 
   return (

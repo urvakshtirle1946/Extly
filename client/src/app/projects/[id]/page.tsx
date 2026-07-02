@@ -26,8 +26,8 @@ import {
   AlertCircle,
   Eye,
   Activity,
-  Image as ImageIcon,
   StopCircle,
+  Zap,
   Wrench,
   Clock,
   RotateCcw,
@@ -242,6 +242,7 @@ export default function EditorPage() {
   const [lastGeneratedCount, setLastGeneratedCount] = useState(0)
   const [messages, setMessages] = useState<Message[]>([])
   const [selfHealAttempts, setSelfHealAttempts] = useState(0)
+  const [isCreditsModalOpen, setIsCreditsModalOpen] = useState(false)
   
   // Multi-tab Open Files States
   const [openFiles, setOpenFiles] = useState<string[]>([])
@@ -647,7 +648,11 @@ export default function EditorPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP error ${response.status}`);
+        const errMsg = errorData.error || `HTTP error ${response.status}`;
+        if (response.status === 403 || errMsg.toLowerCase().includes('credits') || errMsg.toLowerCase().includes('limit reached')) {
+          setIsCreditsModalOpen(true)
+        }
+        throw new Error(errMsg);
       }
 
       if (!response.body) throw new Error('No response body')
@@ -721,6 +726,7 @@ export default function EditorPage() {
       console.error('Streaming error:', err)
       setError(err.message || 'Streaming failed')
       setStatus('failed')
+      setMessages((prev) => prev.filter((m) => m.id !== assistantMessageId))
     } finally {
       abortControllerRef.current = null
     }
@@ -1518,6 +1524,48 @@ export default function EditorPage() {
         onOpenChange={setIsCommandPaletteOpen}
         items={commandItems}
       />
+
+      {isCreditsModalOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-neutral-950 border border-neutral-900 w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center relative overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            {/* Close Button */}
+            <button
+              onClick={() => setIsCreditsModalOpen(false)}
+              className="absolute top-4 right-4 p-1 hover:bg-neutral-900 text-neutral-500 hover:text-white rounded-lg transition-all"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Glowing Icon */}
+            <div className="w-12 h-12 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto mb-4 shadow-[0_0_20px_rgba(168,85,247,0.15)]">
+              <Zap className="w-5 h-5 text-purple-400 fill-purple-400/20 animate-pulse" />
+            </div>
+
+            {/* Title & Description */}
+            <h3 className="text-base font-bold text-white mb-2">Daily Credits Exhausted</h3>
+            <p className="text-neutral-450 text-xs leading-relaxed mb-6">
+              You have completed all 5 of your free daily extension builds. Upgrade to the Pro plan for unlimited generations, advanced AI capabilities, and immediate previews.
+            </p>
+
+            {/* Actions */}
+            <div className="flex flex-col gap-2">
+              <Link
+                href="/dashboard?tab=billing"
+                className="w-full py-2.5 bg-purple-600 hover:bg-purple-550 active:scale-98 text-white text-xs font-bold rounded-xl flex items-center justify-center space-x-1.5 transition-all shadow-md shadow-purple-950/40"
+              >
+                <Zap className="w-3.5 h-3.5 fill-white text-white" />
+                <span>Upgrade to Pro Plan</span>
+              </Link>
+              <button
+                onClick={() => setIsCreditsModalOpen(false)}
+                className="w-full py-2.5 bg-transparent hover:bg-neutral-900 text-neutral-400 hover:text-neutral-200 text-xs font-semibold rounded-xl transition-all border border-neutral-900"
+              >
+                Keep Editing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

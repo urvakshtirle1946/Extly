@@ -225,6 +225,18 @@ export default function DashboardContent() {
   const [activeWorkspace, setActiveWorkspace] = useState('Acme Corp')
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false)
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const tab = params.get('tab')
+      if (tab === 'billing') {
+        setSidebarActiveId('billing')
+      } else if (tab === 'settings') {
+        setSidebarActiveId('settings')
+      }
+    }
+  }, [])
 
   const handleSidebarSelect = (id: string) => {
     if (id === 'logout') {
