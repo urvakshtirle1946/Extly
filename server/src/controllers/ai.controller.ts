@@ -15,8 +15,10 @@ export async function handleGenerate(req: AuthenticatedRequest, res: Response) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
-  // Verify daily build credits (Limit 5 per day for free users)
   try {
+    console.log('[Credits] userId:', userId)
+    console.log('[Credits] NODE_ENV:', process.env.NODE_ENV)
+
     // Ensure the user record exists in our local database
     await db.query(
       `INSERT INTO users (id, email, password_hash, plan)
@@ -26,6 +28,7 @@ export async function handleGenerate(req: AuthenticatedRequest, res: Response) {
     )
 
     const userResult = await db.query('SELECT plan FROM users WHERE id = $1', [userId])
+    console.log('[Credits] userResult rows:', userResult.rows)
     const plan = userResult.rows[0]?.plan || 'free'
 
     if (plan === 'free') {
@@ -38,8 +41,13 @@ export async function handleGenerate(req: AuthenticatedRequest, res: Response) {
         [userId]
       )
       const count = todayResult.rows[0]?.count || 0
+      console.log('[Credits] count today:', count)
+      
       const defaultLimit = process.env.NODE_ENV === 'production' ? 5 : 999
       const DAILY_LIMIT = parseInt(process.env.DAILY_CREDIT_LIMIT || String(defaultLimit), 10)
+      console.log('[Credits] DAILY_LIMIT:', DAILY_LIMIT)
+      console.log('[Credits] DAILY_CREDIT_LIMIT ENV:', process.env.DAILY_CREDIT_LIMIT)
+
       if (count >= DAILY_LIMIT) {
         return res.status(403).json({ error: 'Daily build credits limit reached. Please upgrade your plan.' })
       }
