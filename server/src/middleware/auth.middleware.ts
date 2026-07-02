@@ -21,15 +21,30 @@ export async function authMiddleware(req: AuthenticatedRequest, res: Response, n
   const token = authHeader.split(' ')[1]
 
   try {
+    // 1. Decode the token payload to extract the 'azp' (Authorized Party) claim
+    let azp: string | undefined = undefined
+    try {
+      const payloadParts = token.split('.')[1]
+      if (payloadParts) {
+        const decodedPayload = JSON.parse(Buffer.from(payloadParts, 'base64').toString('utf-8'))
+        azp = decodedPayload.azp
+      }
+    } catch (err) {
+      console.warn('[Auth] Failed to decode token payload:', err)
+    }
+
+    // 2. Validate the 'azp' claim against allowed patterns
+    const isAuthorizedPartyValid = 
+      azp && (
+        azp.includes('localhost') || 
+        azp.includes('vercel.app') || 
+        azp.includes('extly.io')
+      )
+
     // Verify the Clerk session token
     const payload = await verifyToken(token, {
       secretKey: process.env.CLERK_SECRET_KEY!,
-      authorizedParties: [
-        'http://localhost:3000',
-        'https://extly.vercel.app',
-        'https://extly-git-main-urvakshtirle-gmailcoms-projects.vercel.app',
-        ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
-      ],
+      authorizedParties: isAuthorizedPartyValid && azp ? [azp as string] : [],
     })
 
     if (!payload || !payload.sub) {
