@@ -154,7 +154,7 @@ async function executeCompletion(
     messages,
     stream: true,
     temperature: 0.2,
-    max_tokens: 4096,
+    max_tokens: 2048,
   });
 
   for await (const chunk of responseStream) {
