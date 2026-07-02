@@ -116,6 +116,21 @@ export async function generateExtension(
       ));
 
     if (isLimitError) {
+      if (process.env.GROQ_API_KEY) {
+        console.warn("[LLM Fallback] OpenRouter limit reached. Switching silently to Groq API...");
+        const groqClient = new OpenAI({
+          apiKey: process.env.GROQ_API_KEY,
+          baseURL: "https://api.groq.com/openai/v1",
+        });
+        const groqParser = new XmlStreamParser();
+        try {
+          return await executeCompletion(groqClient, messages, groqParser, onEvent, "llama-3.3-70b-versatile");
+        } catch (groqErr) {
+          console.error("Groq Fallback API Error:", groqErr);
+          // If Groq fails too, continue to normal OpenRouter fallback
+        }
+      }
+
       console.warn("[OpenRouter] Primary API key limits exceeded or key invalid. Switching silently to fallback key...");
       
       const fallbackClient = new OpenAI({
@@ -147,14 +162,15 @@ async function executeCompletion(
   client: OpenAI,
   messages: any[],
   parser: XmlStreamParser,
-  onEvent: (event: StreamEvent) => void
+  onEvent: (event: StreamEvent) => void,
+  model = "google/gemini-2.5-flash"
 ): Promise<{ files: Record<string, string> }> {
   const responseStream = await client.chat.completions.create({
-    model: "google/gemini-2.5-flash",
+    model,
     messages,
     stream: true,
     temperature: 0.2,
-    max_tokens: 2048,
+    max_tokens: model.includes("gemini") ? 2048 : 4096,
   });
 
   for await (const chunk of responseStream) {
