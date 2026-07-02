@@ -17,6 +17,14 @@ export async function handleGenerate(req: AuthenticatedRequest, res: Response) {
 
   // Verify daily build credits (Limit 5 per day for free users)
   try {
+    // Ensure the user record exists in our local database
+    await db.query(
+      `INSERT INTO users (id, email, password_hash, plan)
+       VALUES ($1, '', '', 'free')
+       ON CONFLICT (id) DO NOTHING`,
+      [userId]
+    )
+
     const userResult = await db.query('SELECT plan FROM users WHERE id = $1', [userId])
     const plan = userResult.rows[0]?.plan || 'free'
 
