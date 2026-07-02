@@ -1130,7 +1130,7 @@ export default function EditorPage() {
                 }`}
               >
                 <span className="font-semibold text-[10px] text-neutral-450 uppercase tracking-wider mb-1">
-                  {msg.role === 'user' ? 'You' : 'Gemini Assistant'}
+                  {msg.role === 'user' ? 'You' : 'Extly AI'}
                 </span>
                 {msg.content ? (
                   <div className="space-y-2.5 break-words overflow-hidden">

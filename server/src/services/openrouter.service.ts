@@ -102,56 +102,39 @@ export async function generateExtension(
   try {
     return await executeCompletion(openrouter, messages, parser, onEvent);
   } catch (error: any) {
-    const isLimitError = 
-      error.status === 429 || // Rate limit
-      error.status === 402 || // Insufficient credits / Out of balance
-      error.status === 401 || // Key invalid / expired
-      (error.message && (
-        error.message.toLowerCase().includes("limit") ||
-        error.message.toLowerCase().includes("exceed") ||
-        error.message.toLowerCase().includes("quota") ||
-        error.message.toLowerCase().includes("credit") ||
-        error.message.toLowerCase().includes("balance") ||
-        error.message.toLowerCase().includes("payment")
-      ));
-
-    if (isLimitError) {
-      if (process.env.GROQ_API_KEY) {
-        console.warn("[LLM Fallback] OpenRouter limit reached. Switching silently to Groq API...");
-        const groqClient = new OpenAI({
-          apiKey: process.env.GROQ_API_KEY,
-          baseURL: "https://api.groq.com/openai/v1",
-        });
-        const groqParser = new XmlStreamParser();
-        try {
-          return await executeCompletion(groqClient, messages, groqParser, onEvent, "llama-3.3-70b-versatile");
-        } catch (groqErr) {
-          console.error("Groq Fallback API Error:", groqErr);
-          // If Groq fails too, continue to normal OpenRouter fallback
-        }
-      }
-
-      console.warn("[OpenRouter] Primary API key limits exceeded or key invalid. Switching silently to fallback key...");
-      
-      const fallbackClient = new OpenAI({
-        apiKey: FALLBACK_API_KEY,
-        baseURL: "https://openrouter.ai/api/v1",
-        defaultHeaders: {
-          "HTTP-Referer": "https://github.com/OpenExtensionCraft",
-          "X-Title": "ExtensionCraft",
-        },
+    console.warn("[OpenRouter] Primary API key failed. Error:", error.message || error);
+    
+    if (process.env.GROQ_API_KEY) {
+      console.warn("[LLM Fallback] Switching silently to Groq API...");
+      const groqClient = new OpenAI({
+        apiKey: process.env.GROQ_API_KEY,
+        baseURL: "https://api.groq.com/openai/v1",
       });
-
-      const fallbackParser = new XmlStreamParser();
+      const groqParser = new XmlStreamParser();
       try {
-        return await executeCompletion(fallbackClient, messages, fallbackParser, onEvent);
-      } catch (fallbackErr) {
-        console.error("OpenRouter Fallback API Error:", fallbackErr);
-        throw fallbackErr;
+        return await executeCompletion(groqClient, messages, groqParser, onEvent, "llama-3.3-70b-versatile");
+      } catch (groqErr) {
+        console.error("Groq Fallback API Error:", groqErr);
+        // Continue to backup OpenRouter if Groq fails
       }
-    } else {
-      console.error("OpenRouter API Error:", error);
-      throw error;
+    }
+
+    console.warn("[OpenRouter] Switching silently to fallback key...");
+    const fallbackClient = new OpenAI({
+      apiKey: FALLBACK_API_KEY,
+      baseURL: "https://openrouter.ai/api/v1",
+      defaultHeaders: {
+        "HTTP-Referer": "https://github.com/OpenExtensionCraft",
+        "X-Title": "ExtensionCraft",
+      },
+    });
+
+    const fallbackParser = new XmlStreamParser();
+    try {
+      return await executeCompletion(fallbackClient, messages, fallbackParser, onEvent);
+    } catch (fallbackErr) {
+      console.error("OpenRouter Fallback API Error:", fallbackErr);
+      throw fallbackErr;
     }
   }
 }
