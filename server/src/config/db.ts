@@ -123,6 +123,11 @@ export async function initDb() {
     await client.query(`
       ALTER TABLE users ADD COLUMN IF NOT EXISTS plan VARCHAR(50) DEFAULT 'free';
     `)
+    // Dynamically add credit columns if they don't exist
+    await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS total_credits INTEGER DEFAULT 10;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS used_credits INTEGER DEFAULT 0;
+    `)
     console.log('[Database] Migrations executed successfully!')
     
     client.release()

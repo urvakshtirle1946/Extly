@@ -231,19 +231,22 @@ export async function handleGetUsage(req: AuthenticatedRequest, res: Response) {
     const todayResult = await db.query(todayQueryText, [userId])
     const usedToday = todayResult.rows[0]?.count || 0
 
-    // 3. Fetch user plan
-    const userResult = await db.query('SELECT plan FROM users WHERE id = $1', [userId])
+    // 3. Fetch user plan and credits
+    const userResult = await db.query(
+      'SELECT plan, total_credits, used_credits FROM users WHERE id = $1',
+      [userId]
+    )
     const plan = userResult.rows[0]?.plan || 'free'
-    const isPro = plan === 'pro'
-    const limit = isPro ? 999999 : 5
-    const remaining = isPro ? 999999 : Math.max(0, 5 - usedToday)
+    const total = userResult.rows[0]?.total_credits ?? 10
+    const used = userResult.rows[0]?.used_credits ?? 0
+    const remaining = Math.max(0, total - used)
 
     return res.status(200).json({
       chartData: chartResult.rows,
       plan,
       dailyCredits: {
-        limit,
-        usedToday,
+        limit: total,
+        usedToday: used,
         remaining
       }
     })
@@ -261,10 +264,10 @@ export async function handleUpgradePlan(req: AuthenticatedRequest, res: Response
 
   try {
     await db.query(
-      "UPDATE users SET plan = $1 WHERE id = $2",
+      "UPDATE users SET plan = $1, total_credits = 200, used_credits = 0 WHERE id = $2",
       [plan, userId]
     )
-    return res.status(200).json({ status: 'success', plan })
+    return res.status(200).json({ status: 'success', plan, total_credits: 200 })
   } catch (error: any) {
     console.error('Error upgrading plan:', error)
     return res.status(500).json({ error: error.message || 'Failed to upgrade plan' })

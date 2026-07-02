@@ -1,8 +1,8 @@
-import 'dotenv/config'
+import 'dotenv/config' 
 import express from 'express'
 import cors from 'cors'
 import { clerkMiddleware } from '@clerk/express'
-import { initDb } from './config/db'
+import { initDb, db } from './config/db'
 import { authMiddleware } from './middleware/auth.middleware'
 import { 
   handleGetProjects, 
@@ -106,6 +106,43 @@ app.post('/api/projects/:id/history/:genId/rollback', authMiddleware as any, han
 // ============================================================================
 app.post('/api/payment/create-order', authMiddleware as any, handleCreateOrder as any)
 app.post('/api/payment/verify', authMiddleware as any, handleVerifyPayment as any)
+
+// ============================================================================
+// ADMIN ROUTES
+// ============================================================================
+const requireAdminKey = (req: any, res: any, next: any) => {
+  const adminKey = req.headers['x-admin-key']
+  const secretKey = process.env.ADMIN_SECRET_KEY || 'extly_secret_admin_key_2026'
+  if (!adminKey || adminKey !== secretKey) {
+    return res.status(403).json({ error: 'Unauthorized: Invalid admin key' })
+  }
+  next()
+}
+
+app.post('/api/admin/users/:userId/credits', requireAdminKey as any, async (req: any, res: any) => {
+  const { userId } = req.params
+  const { total_credits } = req.body
+
+  try {
+    await db.query(
+      `UPDATE users SET total_credits = $1 WHERE id = $2`,
+      [total_credits, userId]
+    )
+
+    const { rows } = await db.query(
+      'SELECT id, total_credits, used_credits FROM users WHERE id = $1',
+      [userId]
+    )
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
+    res.json({ success: true, user: rows[0] })
+  } catch (err: any) {
+    res.status(500).json({ error: err.message })
+  }
+})
 
 // Initialize Database and Start Server
 initDb().then(() => {

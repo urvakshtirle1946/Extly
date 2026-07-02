@@ -16,41 +16,31 @@ export async function handleGenerate(req: AuthenticatedRequest, res: Response) {
   }
 
   try {
-    console.log('[Credits] userId:', userId)
-    console.log('[Credits] NODE_ENV:', process.env.NODE_ENV)
-
-    // Ensure the user record exists in our local database
+    // 1. Ensure user record exists with 10 free credits initially
     await db.query(
-      `INSERT INTO users (id, email, password_hash, plan)
-       VALUES ($1, '', '', 'free')
+      `INSERT INTO users (id, email, password_hash, plan, total_credits, used_credits)
+       VALUES ($1, '', '', 'free', 10, 0)
        ON CONFLICT (id) DO NOTHING`,
       [userId]
     )
 
-    const userResult = await db.query('SELECT plan FROM users WHERE id = $1', [userId])
-    console.log('[Credits] userResult rows:', userResult.rows)
-    const plan = userResult.rows[0]?.plan || 'free'
+    // 2. Credits check - pure DB based
+    const userResult = await db.query(
+      'SELECT total_credits, used_credits FROM users WHERE id = $1',
+      [userId]
+    )
+    const total = userResult.rows[0]?.total_credits ?? 10
+    const used = userResult.rows[0]?.used_credits ?? 0
+    const remaining = total - used
 
-    if (plan === 'free') {
-      const todayResult = await db.query(
-        `SELECT COUNT(g.id)::int as count 
-         FROM generations g
-         JOIN projects p ON g.project_id = p.id
-         WHERE p.user_id = $1
-           AND g.created_at >= DATE_TRUNC('day', NOW() AT TIME ZONE 'UTC')`,
-        [userId]
-      )
-      const count = todayResult.rows[0]?.count || 0
-      console.log('[Credits] count today:', count)
-      
-      const defaultLimit = process.env.NODE_ENV === 'production' ? 5 : 999
-      const DAILY_LIMIT = parseInt(process.env.DAILY_CREDIT_LIMIT || String(defaultLimit), 10)
-      console.log('[Credits] DAILY_LIMIT:', DAILY_LIMIT)
-      console.log('[Credits] DAILY_CREDIT_LIMIT ENV:', process.env.DAILY_CREDIT_LIMIT)
+    console.log(`[Credits] user=${userId} used=${used} total=${total} remaining=${remaining}`)
 
-      if (count >= DAILY_LIMIT) {
-        return res.status(403).json({ error: 'Daily build credits limit reached. Please upgrade your plan.' })
-      }
+    if (remaining <= 0) {
+      return res.status(403).json({ 
+        error: 'Daily build credits limit reached. Please upgrade your plan.',
+        remaining: 0,
+        total
+      })
     }
   } catch (err: any) {
     console.error('Error checking credits:', err)
@@ -136,7 +126,13 @@ export async function handleGenerate(req: AuthenticatedRequest, res: Response) {
       ['idle', projectId]
     )
 
-    // 8. Send final completion event
+    // 8. Deduct one credit from user
+    await db.query(
+      'UPDATE users SET used_credits = used_credits + 1 WHERE id = $1',
+      [userId]
+    )
+
+    // 9. Send final completion event
     res.write(`data: ${JSON.stringify({ type: 'done', files: finalFilesState })}\n\n`)
     res.end()
   } catch (error: any) {
