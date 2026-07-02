@@ -732,20 +732,17 @@ export default function EditorPage() {
       setError(err.message || 'Streaming failed')
       setStatus('failed')
       
-      if (isCreditError) {
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === assistantMessageId
-              ? { 
-                  ...m, 
-                  content: "⚠️ **Daily Build Credits Exhausted**\n\nYou have used your 5 free build credits for today. Please [upgrade your plan](/dashboard?tab=billing) to continue building and deploying extensions." 
-                }
-              : m
-          )
+      const errorMessage = isCreditError
+        ? "⚠️ **Daily Build Credits Exhausted**\n\nYou have used your 5 free build credits for today. Please [upgrade your plan](/dashboard?tab=billing) to continue building and deploying extensions."
+        : `❌ **Generation Failed**\n\nAn error occurred during response generation: \`${err.message || 'Unknown stream error'}\`. Please try again.`;
+
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === assistantMessageId
+            ? { ...m, content: errorMessage }
+            : m
         )
-      } else {
-        setMessages((prev) => prev.filter((m) => m.id !== assistantMessageId))
-      }
+      )
     } finally {
       abortControllerRef.current = null
     }
