@@ -695,6 +695,23 @@ export default function EditorPage() {
           } else if (event.type === 'error') {
             setError(event.message)
             setStatus('failed')
+            const errMsg = event.message || 'Stream generation failed'
+            const isCreditError = 
+              errMsg.toLowerCase().includes('credits') || 
+              errMsg.toLowerCase().includes('limit reached') || 
+              errMsg.toLowerCase().includes('403')
+            
+            const messageText = isCreditError
+              ? "⚠️ **Daily Build Credits Exhausted**\n\nYou have used your 5 free build credits for today. Please [upgrade your plan](/dashboard?tab=billing) to continue building and deploying extensions."
+              : `❌ **Generation Failed**\n\nAn error occurred during response generation: \`${errMsg}\`. Please try again.`;
+
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === assistantMessageId
+                  ? { ...m, content: messageText }
+                  : m
+              )
+            )
           }
         } catch (err) {
           console.error('Error parsing event JSON:', err, dataStr)
@@ -724,17 +741,17 @@ export default function EditorPage() {
         return
       }
       console.error('Streaming error:', err)
-      const errStr = String(err?.message || '')
+      const errStr = String(err?.message || err || 'Streaming failed')
       const isCreditError = 
         errStr.toLowerCase().includes('credits') || 
         errStr.toLowerCase().includes('limit reached') || 
         errStr.toLowerCase().includes('403')
-      setError(err.message || 'Streaming failed')
+      setError(errStr)
       setStatus('failed')
       
       const errorMessage = isCreditError
         ? "⚠️ **Daily Build Credits Exhausted**\n\nYou have used your 5 free build credits for today. Please [upgrade your plan](/dashboard?tab=billing) to continue building and deploying extensions."
-        : `❌ **Generation Failed**\n\nAn error occurred during response generation: \`${err.message || 'Unknown stream error'}\`. Please try again.`;
+        : `❌ **Generation Failed**\n\nAn error occurred during response generation: \`${errStr}\`. Please try again.`;
 
       setMessages((prev) =>
         prev.map((m) =>
