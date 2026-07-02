@@ -20,7 +20,11 @@ export async function handleGenerate(req: AuthenticatedRequest, res: Response) {
     await db.query(
       `INSERT INTO users (id, email, password_hash, plan, total_credits, used_credits)
        VALUES ($1, '', '', 'free', 10, 0)
-       ON CONFLICT (id) DO NOTHING`,
+       ON CONFLICT (id) DO UPDATE SET
+         total_credits = CASE 
+           WHEN users.total_credits = 0 THEN 10 
+           ELSE users.total_credits 
+         END`,
       [userId]
     )
 
@@ -43,8 +47,8 @@ export async function handleGenerate(req: AuthenticatedRequest, res: Response) {
       })
     }
   } catch (err: any) {
-    console.error('Error checking credits:', err)
-    return res.status(500).json({ error: 'Failed to verify build credits' })
+    console.error('[Credits] Check failed — blocking request:', err.message)
+    return res.status(500).json({ error: 'Credit check failed. Please try again.' })
   }
 
   // Set up Server-Sent Events (SSE) headers
