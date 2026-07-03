@@ -211,11 +211,11 @@ MagneticButton.displayName = "MagneticButton";
 // -------------------------------------------------------------------------
 const MarqueeItem = () => (
   <div className="flex items-center space-x-12 px-6">
-    <span>Extension Building Redefined</span> <span className="text-primary/60">✦</span>
-    <span>Interactive Prototyping</span> <span className="text-secondary/60">✦</span>
-    <span>Instant Sandbox Preview</span> <span className="text-primary/60">✦</span>
-    <span>One-Click Export</span> <span className="text-secondary/60">✦</span>
-    <span>Zero Setup Required</span> <span className="text-primary/60">✦</span>
+    <span>Extension Building Redefined</span> <span className="text-white/40">✦</span>
+    <span>Interactive Prototyping</span> <span className="text-white/40">✦</span>
+    <span>Instant Sandbox Preview</span> <span className="text-white/40">✦</span>
+    <span>One-Click Export</span> <span className="text-white/40">✦</span>
+    <span>Zero Setup Required</span> <span className="text-white/40">✦</span>
   </div>
 );
 
@@ -290,10 +290,9 @@ export function CinematicFooter() {
         style={{ clipPath: "polygon(0% 0, 100% 0%, 100% 100%, 0 100%)" }}
       >
         {/* The actual footer stays fixed to the viewport underneath everything */}
-        <footer className="fixed bottom-0 left-0 flex h-screen w-full flex-col justify-between overflow-hidden bg-background text-foreground cinematic-footer-wrapper">
+        <footer className="fixed bottom-0 left-0 flex h-screen w-full flex-col justify-between overflow-hidden bg-black text-foreground cinematic-footer-wrapper">
           
-          {/* Ambient Light & Grid Background */}
-          <div className="footer-aurora absolute left-1/2 top-1/2 h-[60vh] w-[80vw] -translate-x-1/2 -translate-y-1/2 animate-footer-breathe rounded-[50%] blur-[80px] pointer-events-none z-0" />
+          {/* Grid Background */}
           <div className="footer-bg-grid absolute inset-0 z-0 pointer-events-none" />
 
           {/* Giant background text */}
