@@ -47,7 +47,7 @@ export function PromptexLogo({
 }: PromptexLogoProps) {
   return (
     <div className={`flex items-center select-none ${className}`}>
-      <span className={`${dancingScript.className} text-3xl font-bold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-violet-400 via-indigo-300 to-purple-400`}>
+      <span className={`${dancingScript.className} text-3xl font-bold tracking-wide text-white`}>
         Promptex
       </span>
     </div>

@@ -216,26 +216,48 @@ export default function RootPage() {
       </div>
 
       {/* Header */}
-      <header className="relative z-10 h-16 flex items-center justify-between px-8 shrink-0 bg-[#0c0c0e] border-b border-neutral-900/60">
-        {/* Logo - Calligraphic Promptex Text */}
-        <Link href="/" className="group hover:opacity-85 transition-opacity">
-          <PromptexLogo />
-        </Link>
+      <header className="relative z-10 h-16 flex items-center justify-between px-8 shrink-0 bg-[#0c0c0e]/90 backdrop-blur-md border-b border-neutral-900/60 select-none">
+        
+        {/* Left Side: Logo & Links */}
+        <div className="flex items-center gap-3">
+          <Link href="/" className="group hover:opacity-85 transition-opacity flex items-center">
+            <PromptexLogo />
+          </Link>
+          <span className="px-1.5 py-0.5 text-[9px] font-bold text-neutral-400 bg-neutral-900 border border-neutral-800/80 rounded-md uppercase tracking-wider select-none">
+            BETA
+          </span>
 
-        {/* Auth nav — Clerk-aware */}
-        <nav className="flex items-center space-x-3">
+          {/* Navigation Links */}
+          <nav className="hidden md:flex items-center gap-6 ml-8">
+            <Link 
+              href="#how-it-works" 
+              className="text-[13px] font-medium text-neutral-400 hover:text-white transition-colors"
+            >
+              How it Works
+            </Link>
+            <Link 
+              href="#pricing" 
+              className="text-[13px] font-medium text-neutral-400 hover:text-white transition-colors"
+            >
+              Pricing
+            </Link>
+          </nav>
+        </div>
+
+        {/* Right Side: Auth nav — Clerk-aware */}
+        <div className="flex items-center space-x-3">
           <SignedOut>
             <Link
               href="/login"
-              className="border border-neutral-800 bg-neutral-900/30 hover:bg-neutral-800/50 text-white font-medium rounded-lg text-[13px] px-3.5 py-1.5 transition-colors cursor-pointer"
+              className="text-neutral-450 hover:text-white text-[13px] font-bold px-3 py-1.5 transition-colors cursor-pointer"
             >
               Log in
             </Link>
             <Link
               href="/signup"
-              className="bg-white hover:bg-neutral-100 text-black font-extrabold rounded-lg text-[13px] px-4 py-1.5 transition-colors shadow-sm cursor-pointer"
+              className="bg-white hover:bg-neutral-100 text-black font-extrabold rounded-full text-[13px] px-5 py-1.5 transition-all shadow-sm cursor-pointer"
             >
-              Get started
+              Get Started
             </Link>
           </SignedOut>
           <SignedIn>
@@ -247,7 +269,7 @@ export default function RootPage() {
               afterSignOutUrl="/"
             />
           </SignedIn>
-        </nav>
+        </div>
       </header>
 
       {/* Centered hero */}
