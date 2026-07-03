@@ -2,12 +2,8 @@
 
 import React from 'react';
 import { Sparkles } from 'lucide-react';
-import { Dancing_Script } from 'next/font/google';
-
-const dancingScript = Dancing_Script({
-  subsets: ['latin'],
-  weight: ['700'],
-});
+import Image from 'next/image';
+import promptexLogoImg from '../../../public/promptex.png';
 
 interface PromptexLogoProps {
   className?: string;
@@ -38,18 +34,29 @@ export function PromptexLogoMark({
 }
 
 /**
- * PromptexLogo — Renders the brand name written in an elegant calligraphic font.
+ * PromptexLogo — Renders the brand logo image.
  */
 export function PromptexLogo({
   className = "",
+  imageClassName = "",
   width,
   height,
 }: PromptexLogoProps) {
+  // Crop aspect ratio is ~ 1059 / 195 = 5.43
+  const finalHeight = height ?? 26;
+  const finalWidth = width ?? Math.round(finalHeight * 5.43);
+
   return (
     <div className={`flex items-center select-none ${className}`}>
-      <span className={`${dancingScript.className} text-3xl font-bold tracking-wide text-white`}>
-        Promptex
-      </span>
+      <Image 
+        src={promptexLogoImg} 
+        alt="Promptex Logo" 
+        width={finalWidth}
+        height={finalHeight}
+        className={`object-contain ${imageClassName}`}
+        priority
+      />
     </div>
   );
 }
+
