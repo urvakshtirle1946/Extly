@@ -10,6 +10,7 @@ import { useApiFetch } from '@/utils/api'
 import { PromptexLogo, PromptexLogoMark } from '@/components/ui/promptex-logo'
 import { PromptInputBox } from '@/components/ui/ai-prompt-box'
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+import { CinematicFooter } from '@/components/ui/motion-footer'
 
 export default function RootPage() {
   const { user, loading } = useAuth()
@@ -445,14 +446,8 @@ export default function RootPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="relative z-10 py-12 px-8 shrink-0 bg-[#0c0c0e] border-t border-neutral-900/60 mt-auto text-center space-y-4">
-        <div className="text-xs text-neutral-500 font-bold uppercase tracking-wider flex items-center justify-center gap-2 select-none">
-          <span>Promptex</span>
-          <span>•</span>
-          <span>© 2026</span>
-        </div>
-      </footer>
+      {/* Cinematic Footer */}
+      <CinematicFooter />
     </div>
   )
 }
