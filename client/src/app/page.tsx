@@ -165,12 +165,6 @@ export default function RootPage() {
             >
               FAQ
             </Link>
-            <Link 
-              href="#contact" 
-              className="text-[12px] font-bold text-neutral-400 hover:text-white transition-colors"
-            >
-              Contact
-            </Link>
           </nav>
 
           {/* Right Side: Action capsule - clerk aware */}
@@ -504,42 +498,12 @@ export default function RootPage() {
 
           <p className="text-neutral-400 mt-6 text-center text-xs">
             Can't find what you're looking for?{' '}
-            <Link
-              href="#contact"
+            <a
+              href="mailto:support@promptex.io"
               className="text-white font-medium hover:underline">
               Contact our support team
-            </Link>
+            </a>
           </p>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section id="contact" className="relative z-10 py-24 px-6 max-w-3xl w-full mx-auto select-none font-sans text-center border-t border-neutral-900/60">
-        <div className="space-y-4 mb-10">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Have Questions?
-          </h2>
-          <p className="text-[15px] text-neutral-400 max-w-md mx-auto">
-            Our team is here to help. Reach out with feedback, inquiries, or custom requests.
-          </p>
-        </div>
-
-        <div className="inline-flex flex-col sm:flex-row items-center gap-4 bg-white/[0.03] backdrop-blur-[12px] border border-white/[0.08] rounded-3xl p-4 sm:p-3 max-w-md w-full mx-auto shadow-xl">
-          <span className="text-sm font-bold text-neutral-200 px-3">
-            support@promptex.io
-          </span>
-          <button 
-            onClick={() => {
-              if (typeof navigator !== 'undefined') {
-                navigator.clipboard.writeText('support@promptex.io');
-                setCopiedEmail(true);
-                setTimeout(() => setCopiedEmail(false), 2000);
-              }
-            }}
-            className="w-full sm:w-auto h-9 px-6 bg-white hover:bg-neutral-100 text-black text-xs font-bold rounded-2xl transition-colors shadow-md flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <span>{copiedEmail ? 'Copied!' : 'Copy Email'}</span>
-          </button>
         </div>
       </section>
 
