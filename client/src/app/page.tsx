@@ -174,7 +174,7 @@ export default function RootPage() {
                 href="/signup"
                 className="h-9 px-5 flex items-center justify-center bg-white hover:bg-neutral-100 text-black text-[12px] font-extrabold rounded-full transition-colors shadow-lg"
               >
-                Download
+                Get Started
               </Link>
             </SignedOut>
             <SignedIn>
