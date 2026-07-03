@@ -17,6 +17,7 @@ export default function RootPage() {
   const router = useRouter()
   const apiFetch = useApiFetch()
   const [creatingProject, setCreatingProject] = useState(false)
+  const [copiedEmail, setCopiedEmail] = useState(false)
 
   // Intercept pending prompt after successful login
   useEffect(() => {
@@ -115,9 +116,9 @@ export default function RootPage() {
       {/* Floating Header Pill */}
       <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none select-none">
         <header className="pointer-events-auto h-12 max-w-fit flex items-center justify-between gap-6 px-1.5 bg-black/60 backdrop-blur-xl border border-white/[0.08] rounded-full shadow-2xl">
-          {/* Logo Mark Capsule Icon */}
-          <Link href="/" className="w-8 h-8 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center hover:bg-neutral-800 transition-colors ml-1">
-            <PromptexLogoMark width={14} height={14} />
+          {/* Promptex Logo */}
+          <Link href="/" className="flex items-center justify-center hover:opacity-85 transition-opacity ml-3.5 pointer-events-auto shrink-0">
+            <PromptexLogo height={20} />
           </Link>
 
           {/* Navigation Links */}
@@ -443,6 +444,78 @@ export default function RootPage() {
           
           {/* Spacer to align Billed Yearly left and Plans center */}
           <div className="hidden sm:block w-[100px]" />
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="relative z-10 py-24 px-6 max-w-4xl w-full mx-auto select-none font-sans border-t border-neutral-900/60">
+        <div className="text-center space-y-4 mb-16">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            Frequently Asked Questions
+          </h2>
+          <p className="text-[15px] text-neutral-400 max-w-md mx-auto">
+            Everything you need to know about Promptex and building extensions.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white/[0.03] backdrop-blur-[12px] border border-white/[0.08] rounded-2xl p-6 space-y-3">
+            <h3 className="text-sm font-bold text-white">What is Promptex?</h3>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              Promptex is an AI-powered Chrome extension builder. Describe what you want in plain English, and our agent writes all necessary files (manifest, scripts, pages), runs diagnostics, and packages it up.
+            </p>
+          </div>
+
+          <div className="bg-white/[0.03] backdrop-blur-[12px] border border-white/[0.08] rounded-2xl p-6 space-y-3">
+            <h3 className="text-sm font-bold text-white">Do I need coding experience?</h3>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              Not at all! Promptex translates your ideas into standard, clean Manifest V3 code automatically. If you want to modify the code manually later, you can inspect it and download the files.
+            </p>
+          </div>
+
+          <div className="bg-white/[0.03] backdrop-blur-[12px] border border-white/[0.08] rounded-2xl p-6 space-y-3">
+            <h3 className="text-sm font-bold text-white">How do I test my extensions?</h3>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              You can start a live browser preview session directly in the dashboard. Promptex boots up a sandboxed browser instance so you can interact with your popup, options, and background workers in real time.
+            </p>
+          </div>
+
+          <div className="bg-white/[0.03] backdrop-blur-[12px] border border-white/[0.08] rounded-2xl p-6 space-y-3">
+            <h3 className="text-sm font-bold text-white">Can I download the source code?</h3>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              Absolutely. In one click, you can export your extension as a standard production-ready ZIP archive. Extract it locally and load it into Chrome or Edge dev mode instantly.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Section */}
+      <section id="contact" className="relative z-10 py-24 px-6 max-w-3xl w-full mx-auto select-none font-sans text-center border-t border-neutral-900/60">
+        <div className="space-y-4 mb-10">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            Have Questions?
+          </h2>
+          <p className="text-[15px] text-neutral-400 max-w-md mx-auto">
+            Our team is here to help. Reach out with feedback, inquiries, or custom requests.
+          </p>
+        </div>
+
+        <div className="inline-flex flex-col sm:flex-row items-center gap-4 bg-white/[0.03] backdrop-blur-[12px] border border-white/[0.08] rounded-3xl p-4 sm:p-3 max-w-md w-full mx-auto shadow-xl">
+          <span className="text-sm font-bold text-neutral-200 px-3">
+            support@promptex.io
+          </span>
+          <button 
+            onClick={() => {
+              if (typeof navigator !== 'undefined') {
+                navigator.clipboard.writeText('support@promptex.io');
+                setCopiedEmail(true);
+                setTimeout(() => setCopiedEmail(false), 2000);
+              }
+            }}
+            className="w-full sm:w-auto h-9 px-6 bg-white hover:bg-neutral-100 text-black text-xs font-bold rounded-2xl transition-colors shadow-md flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span>{copiedEmail ? 'Copied!' : 'Copy Email'}</span>
+          </button>
         </div>
       </section>
 

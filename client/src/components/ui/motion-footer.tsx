@@ -339,19 +339,6 @@ export function CinematicFooter() {
                   Explore Pricing
                 </MagneticButton>
               </div>
-
-              {/* Secondary Text Links */}
-              <div className="flex flex-wrap justify-center gap-3 md:gap-6 w-full mt-2">
-                <MagneticButton as="a" href="#pricing" className="footer-glass-pill px-6 py-3 rounded-full text-muted-foreground font-medium text-xs md:text-sm hover:text-foreground">
-                  Pricing Plans
-                </MagneticButton>
-                <MagneticButton as="a" href="#faq" className="footer-glass-pill px-6 py-3 rounded-full text-muted-foreground font-medium text-xs md:text-sm hover:text-foreground">
-                  FAQ
-                </MagneticButton>
-                <MagneticButton as="a" href="#contact" className="footer-glass-pill px-6 py-3 rounded-full text-muted-foreground font-medium text-xs md:text-sm hover:text-foreground">
-                  Contact
-                </MagneticButton>
-              </div>
             </div>
           </div>
 
