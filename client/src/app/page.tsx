@@ -205,10 +205,10 @@ export default function RootPage() {
 
   // Unauthenticated → NEAT landing
   return (
-    <div className="min-h-screen text-white overflow-hidden relative font-sans flex flex-col">
+    <div className="min-h-screen text-white overflow-y-auto relative font-sans flex flex-col scroll-smooth">
 
       {/* NEAT Animated Gradient Canvas */}
-      <div className="absolute inset-0 pointer-events-none z-0">
+      <div className="fixed inset-0 pointer-events-none z-0">
         <canvas
           ref={canvasRef}
           className="w-full h-full opacity-100"
@@ -216,28 +216,25 @@ export default function RootPage() {
       </div>
 
       {/* Header */}
-      <header className="relative z-10 h-16 flex items-center justify-between px-8 shrink-0 bg-[#0c0c0e]/90 backdrop-blur-md border-b border-neutral-900/60 select-none">
+      <header className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-8 bg-[#0c0c0e]/90 backdrop-blur-md border-b border-neutral-900/60 select-none">
         
         {/* Left Side: Logo & Links */}
         <div className="flex items-center gap-3">
           <Link href="/" className="group hover:opacity-85 transition-opacity flex items-center">
             <PromptexLogo />
           </Link>
-          <span className="px-1.5 py-0.5 text-[9px] font-bold text-neutral-400 bg-neutral-900 border border-neutral-800/80 rounded-md uppercase tracking-wider select-none">
-            BETA
-          </span>
 
           {/* Navigation Links */}
           <nav className="hidden md:flex items-center gap-6 ml-8">
             <Link 
               href="#how-it-works" 
-              className="text-[13px] font-medium text-neutral-400 hover:text-white transition-colors"
+              className="text-[13px] font-medium text-neutral-450 hover:text-white transition-colors"
             >
               How it Works
             </Link>
             <Link 
               href="#pricing" 
-              className="text-[13px] font-medium text-neutral-400 hover:text-white transition-colors"
+              className="text-[13px] font-medium text-neutral-450 hover:text-white transition-colors"
             >
               Pricing
             </Link>
@@ -273,8 +270,8 @@ export default function RootPage() {
       </header>
 
       {/* Centered hero */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 max-w-4xl w-full mx-auto relative z-10 pb-20 select-none font-sans">
-        <div className="text-center space-y-7 w-full">
+      <main className="min-h-screen flex flex-col items-center justify-center px-6 max-w-4xl w-full mx-auto relative z-10 pt-16 pb-20 select-none font-sans">
+        <div className="text-center space-y-7 w-full my-auto">
           <div className="space-y-4">
             <h1 className="text-4xl sm:text-[62px] font-extrabold tracking-tight text-white leading-[1.1] drop-shadow-lg">
               Build extensions with Promptex
@@ -291,10 +288,163 @@ export default function RootPage() {
             />
           </div>
         </div>
+
+        {/* Scroll Indicator */}
+        <div 
+          onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
+          className="absolute bottom-6 flex flex-col items-center gap-1 text-[10px] text-neutral-450 animate-bounce cursor-pointer font-bold uppercase tracking-widest select-none"
+        >
+          <span>Learn More</span>
+          <svg className="w-3.5 h-3.5 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
       </main>
 
+      {/* How it Works Section */}
+      <section id="how-it-works" className="relative z-10 py-24 px-6 max-w-5xl w-full mx-auto border-t border-neutral-900/60 bg-[#0c0c0e]/40 backdrop-blur-md rounded-3xl my-10 select-none">
+        <div className="text-center space-y-4 mb-16">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            How Promptex Works
+          </h2>
+          <p className="text-[15px] text-neutral-400 max-w-md mx-auto">
+            Build, test, and deploy browser extensions in minutes with the power of natural language.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Step 1 */}
+          <div className="bg-neutral-950/80 border border-neutral-900/60 rounded-2xl p-6 space-y-4 shadow-lg hover:border-neutral-800 transition-all duration-300 group">
+            <div className="w-10 h-10 rounded-xl bg-purple-600/10 border border-purple-500/20 flex items-center justify-center font-black text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
+              1
+            </div>
+            <h3 className="text-base font-bold text-white">Draft your prompt</h3>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              Describe your browser extension in plain English. Prompt for custom UI popups, options pages, background scripts, or DOM content injects.
+            </p>
+          </div>
+
+          {/* Step 2 */}
+          <div className="bg-neutral-950/80 border border-neutral-900/60 rounded-2xl p-6 space-y-4 shadow-lg hover:border-neutral-800 transition-all duration-300 group">
+            <div className="w-10 h-10 rounded-xl bg-purple-600/10 border border-purple-500/20 flex items-center justify-center font-black text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
+              2
+            </div>
+            <h3 className="text-base font-bold text-white">Live AI generation</h3>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              Watch Promptex write HTML, JavaScript, CSS, and manifest files, resolve API connections, design layouts, and automatically resolve bugs.
+            </p>
+          </div>
+
+          {/* Step 3 */}
+          <div className="bg-neutral-950/80 border border-neutral-900/60 rounded-2xl p-6 space-y-4 shadow-lg hover:border-neutral-800 transition-all duration-300 group">
+            <div className="w-10 h-10 rounded-xl bg-purple-600/10 border border-purple-500/20 flex items-center justify-center font-black text-purple-400 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
+              3
+            </div>
+            <h3 className="text-base font-bold text-white">Export MV3 Extension</h3>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              Test your extension inside a live sandboxed browser environment, inspect file code, debug, and download a production ZIP in one click.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="relative z-10 py-24 px-6 max-w-5xl w-full mx-auto border-t border-neutral-900/60 bg-[#0c0c0e]/40 backdrop-blur-md rounded-3xl my-10 select-none">
+        <div className="text-center space-y-4 mb-16">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            Simple Credit Packages
+          </h2>
+          <p className="text-[15px] text-neutral-400 max-w-md mx-auto">
+            No subscriptions or hidden monthly fees. Buy package credits dynamically to fund your extension development.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          {/* Card 1 */}
+          <div className="bg-neutral-950/80 border border-neutral-900/60 rounded-2xl p-6 flex flex-col justify-between shadow-lg hover:border-neutral-800 transition-all duration-300">
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold text-purple-400 uppercase tracking-widest block">Starter pack</span>
+                <h3 className="text-lg font-bold text-white">100 Credits</h3>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-black text-white">$24</span>
+                <span className="text-neutral-500 text-xs font-semibold">one-time</span>
+              </div>
+              <p className="text-xs text-neutral-450 leading-relaxed">
+                Great for trying out ideas or building 2-3 standard Chrome extensions.
+              </p>
+            </div>
+            <Link 
+              href="/signup" 
+              className="mt-8 w-full py-2.5 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 hover:border-neutral-700 text-white text-center font-bold rounded-xl text-xs uppercase tracking-wider transition-all"
+            >
+              Get Started
+            </Link>
+          </div>
+
+          {/* Card 2 - Featured */}
+          <div className="bg-neutral-950/90 border-2 border-purple-600 rounded-2xl p-6 flex flex-col justify-between shadow-2xl relative">
+            <div className="absolute top-0 right-6 -translate-y-1/2 bg-purple-600 text-white text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+              Most Popular
+            </div>
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold text-purple-400 uppercase tracking-widest block">Developer pack</span>
+                <h3 className="text-lg font-bold text-white">400 Credits</h3>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-black text-white">$99</span>
+                <span className="text-neutral-500 text-xs font-semibold">one-time</span>
+              </div>
+              <p className="text-xs text-neutral-450 leading-relaxed">
+                Perfect for developers building complex extensions and debugging multiple scripts.
+              </p>
+            </div>
+            <Link 
+              href="/signup" 
+              className="mt-8 w-full py-2.5 bg-purple-600 hover:bg-purple-550 text-white text-center font-extrabold rounded-xl text-xs uppercase tracking-wider transition-all shadow-md shadow-purple-950/40"
+            >
+              Get Started
+            </Link>
+          </div>
+
+          {/* Card 3 */}
+          <div className="bg-neutral-950/80 border border-neutral-900/60 rounded-2xl p-6 flex flex-col justify-between shadow-lg hover:border-neutral-800 transition-all duration-300">
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold text-purple-400 uppercase tracking-widest block">Professional pack</span>
+                <h3 className="text-lg font-bold text-white">1200 Credits</h3>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-black text-white">$299</span>
+                <span className="text-neutral-500 text-xs font-semibold">one-time</span>
+              </div>
+              <p className="text-xs text-neutral-450 leading-relaxed">
+                Designed for power creators publishing production extensions and managing teams.
+              </p>
+            </div>
+            <Link 
+              href="/signup" 
+              className="mt-8 w-full py-2.5 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 hover:border-neutral-700 text-white text-center font-bold rounded-xl text-xs uppercase tracking-wider transition-all"
+            >
+              Get Started
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="relative z-10 py-12 px-8 shrink-0 bg-[#0c0c0e] border-t border-neutral-900/60 mt-auto text-center space-y-4">
+        <div className="text-xs text-neutral-500 font-bold uppercase tracking-wider flex items-center justify-center gap-2 select-none">
+          <span>Promptex</span>
+          <span>•</span>
+          <span>© 2026</span>
+        </div>
+      </footer>
+
       {/* NEAT watermark */}
-      <div className="absolute bottom-3 right-4 z-10 pointer-events-none select-none">
+      <div className="fixed bottom-3 right-4 z-10 pointer-events-none select-none">
         <span className="text-[9px] text-white/30 font-bold uppercase tracking-wider">NEAT</span>
       </div>
     </div>
