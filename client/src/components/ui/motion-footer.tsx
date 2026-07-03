@@ -356,31 +356,40 @@ export function CinematicFooter() {
           </div>
 
           {/* 3. Bottom Bar / Credits */}
-          <div className="relative z-20 w-full pb-8 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="relative z-20 w-full pb-8 px-6 md:px-12 grid grid-cols-1 md:grid-cols-3 items-center gap-6">
             
             {/* Copyright */}
-            <div className="text-muted-foreground text-[10px] md:text-xs font-semibold tracking-widest uppercase order-2 md:order-1">
+            <div className="text-muted-foreground text-[10px] md:text-xs font-semibold tracking-widest uppercase order-2 md:order-1 text-center md:text-left">
               © 2026 Volvox. All rights reserved.
             </div>
 
             {/* "Made with Love" Badge */}
-            <div className="footer-glass-pill px-6 py-3 rounded-full flex items-center gap-2 order-1 md:order-2 cursor-default border-border/50">
-              <span className="text-muted-foreground text-[10px] md:text-xs font-bold uppercase tracking-widest">Crafted with</span>
-              <span className="animate-footer-heartbeat text-sm md:text-base text-destructive">❤</span>
-              <span className="text-muted-foreground text-[10px] md:text-xs font-bold uppercase tracking-widest">by</span>
-              <span className="text-foreground font-black text-xs md:text-sm tracking-normal ml-1">Volvox</span>
+            <div className="flex justify-center order-1 md:order-2">
+              <a 
+                href="http://linkedin.com/in/urvaksh-tirle"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="footer-glass-pill px-6 py-3 rounded-full flex items-center gap-2 border-border/50 hover:bg-white/[0.08] transition-all duration-300 cursor-pointer"
+              >
+                <span className="text-muted-foreground text-[10px] md:text-xs font-bold uppercase tracking-widest">Crafted with</span>
+                <span className="animate-footer-heartbeat text-sm md:text-base text-red-500" style={{ color: '#ef4444' }}>❤</span>
+                <span className="text-muted-foreground text-[10px] md:text-xs font-bold uppercase tracking-widest">by</span>
+                <span className="text-foreground font-black text-xs md:text-sm tracking-normal ml-1 hover:underline">Urvaksh</span>
+              </a>
             </div>
 
             {/* Back to top */}
-            <MagneticButton
-              as="button"
-              onClick={scrollToTop}
-              className="w-12 h-12 rounded-full footer-glass-pill flex items-center justify-center text-muted-foreground hover:text-foreground group order-3"
-            >
-              <svg className="w-5 h-5 transform group-hover:-translate-y-1.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-              </svg>
-            </MagneticButton>
+            <div className="flex justify-center md:justify-end order-3">
+              <MagneticButton
+                as="button"
+                onClick={scrollToTop}
+                className="w-12 h-12 rounded-full footer-glass-pill flex items-center justify-center text-muted-foreground hover:text-foreground group"
+              >
+                <svg className="w-5 h-5 transform group-hover:-translate-y-1.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                </svg>
+              </MagneticButton>
+            </div>
 
           </div>
         </footer>
