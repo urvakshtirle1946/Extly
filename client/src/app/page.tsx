@@ -7,7 +7,6 @@ import DashboardContent from '@/components/DashboardContent'
 import Link from 'next/link'
 import { Code, Loader2, Check } from 'lucide-react'
 import { useApiFetch } from '@/utils/api'
-import { NeatGradient } from '@firecms/neat'
 import { PromptexLogo, PromptexLogoMark } from '@/components/ui/promptex-logo'
 import { PromptInputBox } from '@/components/ui/ai-prompt-box'
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
@@ -15,115 +14,8 @@ import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 export default function RootPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
-  const canvasRef = useRef<HTMLCanvasElement>(null)
   const apiFetch = useApiFetch()
   const [creatingProject, setCreatingProject] = useState(false)
-
-  // Initialize the NeatGradient canvas (identical to DashboardContent)
-  useEffect(() => {
-    if (!canvasRef.current) return
-
-    const config = {
-      colors: [
-        { color: '#167CB3', enabled: true },
-        { color: '#CB9854', enabled: true },
-        { color: '#CE96CE', enabled: true },
-        { color: '#E0115F', enabled: true },
-        { color: '#FFFFFF', enabled: false },
-        { color: '#000000', enabled: false },
-      ],
-      speed: 2.5,
-      horizontalPressure: 5,
-      verticalPressure: 5,
-      waveFrequencyX: 2,
-      waveFrequencyY: 3,
-      waveAmplitude: 6,
-      shadows: 2,
-      highlights: 0,
-      colorBrightness: 0.9,
-      colorSaturation: -3,
-      wireframe: false,
-      colorBlending: 5,
-      backgroundColor: '#A1A4B7',
-      backgroundAlpha: 1,
-      grainScale: 0,
-      grainSparsity: 0,
-      grainIntensity: 0,
-      grainSpeed: 0,
-      resolution: 0.4,
-      yOffset: 0.0999755859375,
-      yOffsetWaveMultiplier: 1,
-      yOffsetColorMultiplier: 4.8,
-      yOffsetFlowMultiplier: 5.3,
-      flowDistortionA: 3.7,
-      flowDistortionB: 0.8,
-      flowScale: 1.6,
-      flowEase: 0.32,
-      flowEnabled: true,
-      enableProceduralTexture: false,
-      transparentTextureVoid: true,
-      textureVoidLikelihood: 0.29,
-      textureVoidWidthMin: 120,
-      textureVoidWidthMax: 420,
-      textureBandDensity: 2.9,
-      textureColorBlending: 0.06,
-      textureSeed: 536,
-      textureEase: 0.93,
-      proceduralBackgroundColor: '#775454',
-      textureShapeTriangles: 48,
-      textureShapeCircles: 15,
-      textureShapeBars: 15,
-      textureShapeSquiggles: 27,
-      domainWarpEnabled: true,
-      domainWarpIntensity: 0.1,
-      domainWarpScale: 2.4,
-      vignetteIntensity: 0.45,
-      vignetteRadius: 0.55,
-      fresnelEnabled: false,
-      fresnelPower: 2.7,
-      fresnelIntensity: 1.3,
-      fresnelColor: '#F7E7CE',
-      iridescenceEnabled: false,
-      iridescenceIntensity: 0.5,
-      iridescenceSpeed: 1,
-      bloomIntensity: 1.9,
-      bloomThreshold: 0.6,
-      chromaticAberration: 17,
-      shapeType: 'ribbon' as const,
-      shapeRotationX: 0.3480000000000001,
-      shapeRotationY: -26.783,
-      shapeRotationZ: -0.29,
-      shapeAutoRotateSpeedX: 0,
-      shapeAutoRotateSpeedY: 0,
-      sphereRadius: 15,
-      torusRadius: 15,
-      torusTube: 5,
-      cylinderRadius: 10,
-      cylinderHeight: 40,
-      planeBend: 2.3,
-      planeTwist: -2.9,
-      silhouetteFade: 0.83,
-      cylinderFade: 0.08,
-      ribbonFade: 0.31,
-      flatShading: false,
-      cameraLock: false,
-      cameraX: 0,
-      cameraY: 0,
-      cameraZ: 0,
-      cameraRotationX: -0.014,
-      cameraRotationY: -0.23800000000000002,
-      cameraRotationZ: 0,
-      cameraZoom: 1,
-    }
-
-    const gradient = new NeatGradient({ ref: canvasRef.current, ...config })
-
-    return () => {
-      if (gradient && typeof gradient.destroy === 'function') {
-        gradient.destroy()
-      }
-    }
-  }, [user, loading, creatingProject])
 
   // Intercept pending prompt after successful login
   useEffect(() => {
@@ -207,11 +99,15 @@ export default function RootPage() {
   return (
     <div className="min-h-screen text-white overflow-y-auto relative font-sans flex flex-col scroll-smooth">
 
-      {/* NEAT Animated Gradient Canvas */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <canvas
-          ref={canvasRef}
-          className="w-full h-full opacity-100"
+      {/* Background Video */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-black">
+        <video
+          src="/Hero.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover opacity-50"
         />
       </div>
 
