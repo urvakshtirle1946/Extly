@@ -11,6 +11,7 @@ import { PromptexLogo, PromptexLogoMark } from '@/components/ui/promptex-logo'
 import { PromptInputBox } from '@/components/ui/ai-prompt-box'
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { CinematicFooter } from '@/components/ui/motion-footer'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 
 export default function RootPage() {
   const { user, loading } = useAuth()
@@ -18,6 +19,29 @@ export default function RootPage() {
   const apiFetch = useApiFetch()
   const [creatingProject, setCreatingProject] = useState(false)
   const [copiedEmail, setCopiedEmail] = useState(false)
+
+  const faqItems = [
+    {
+      id: 'item-1',
+      question: 'What is Promptex?',
+      answer: 'Promptex is an AI-powered Chrome extension builder. Describe what you want in plain English, and our agent writes all necessary files (manifest, scripts, pages), runs diagnostics, and packages it up.',
+    },
+    {
+      id: 'item-2',
+      question: 'Do I need coding experience?',
+      answer: 'Not at all! Promptex translates your ideas into standard, clean Manifest V3 code automatically. If you want to modify the code manually later, you can inspect it and download the files.',
+    },
+    {
+      id: 'item-3',
+      question: 'How do I test my extensions?',
+      answer: 'You can start a live browser preview session directly in the dashboard. Promptex boots up a sandboxed browser instance so you can interact with your popup, options, and background workers in real time.',
+    },
+    {
+      id: 'item-4',
+      question: 'Can I download the source code?',
+      answer: 'Absolutely. In one click, you can export your extension as a standard production-ready ZIP archive. Extract it locally and load it into Chrome or Edge dev mode instantly.',
+    },
+  ]
 
   // Intercept pending prompt after successful login
   useEffect(() => {
@@ -448,44 +472,44 @@ export default function RootPage() {
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" className="relative z-10 py-24 px-6 max-w-4xl w-full mx-auto select-none font-sans border-t border-neutral-900/60">
-        <div className="text-center space-y-4 mb-16">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+      <section id="faq" className="relative z-10 py-24 px-4 md:px-6 max-w-5xl w-full mx-auto select-none font-sans border-t border-neutral-900/60">
+        <div className="mx-auto max-w-xl text-center">
+          <h2 className="text-balance text-3xl font-extrabold md:text-4xl text-white">
             Frequently Asked Questions
           </h2>
-          <p className="text-[15px] text-neutral-400 max-w-md mx-auto">
-            Everything you need to know about Promptex and building extensions.
+          <p className="text-neutral-400 mt-4 text-balance text-sm">
+            Discover quick and comprehensive answers to common questions about our platform, services, and features.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white/[0.03] backdrop-blur-[12px] border border-white/[0.08] rounded-2xl p-6 space-y-3">
-            <h3 className="text-sm font-bold text-white">What is Promptex?</h3>
-            <p className="text-xs text-neutral-400 leading-relaxed">
-              Promptex is an AI-powered Chrome extension builder. Describe what you want in plain English, and our agent writes all necessary files (manifest, scripts, pages), runs diagnostics, and packages it up.
-            </p>
-          </div>
+        <div className="mx-auto mt-12 max-w-xl">
+          <Accordion
+            type="single"
+            collapsible
+            className="bg-[#0b0b0c]/80 w-full rounded-2xl border border-white/[0.08] px-8 py-3 shadow-2xl">
+            {faqItems.map((item) => (
+              <AccordionItem
+                key={item.id}
+                value={item.id}
+                className="border-dashed border-white/[0.08]">
+                <AccordionTrigger className="cursor-pointer text-sm font-semibold text-white hover:no-underline py-4">
+                  {item.question}
+                </AccordionTrigger>
+                <AccordionContent className="text-xs text-neutral-400 leading-relaxed pb-4">
+                  {item.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
 
-          <div className="bg-white/[0.03] backdrop-blur-[12px] border border-white/[0.08] rounded-2xl p-6 space-y-3">
-            <h3 className="text-sm font-bold text-white">Do I need coding experience?</h3>
-            <p className="text-xs text-neutral-400 leading-relaxed">
-              Not at all! Promptex translates your ideas into standard, clean Manifest V3 code automatically. If you want to modify the code manually later, you can inspect it and download the files.
-            </p>
-          </div>
-
-          <div className="bg-white/[0.03] backdrop-blur-[12px] border border-white/[0.08] rounded-2xl p-6 space-y-3">
-            <h3 className="text-sm font-bold text-white">How do I test my extensions?</h3>
-            <p className="text-xs text-neutral-400 leading-relaxed">
-              You can start a live browser preview session directly in the dashboard. Promptex boots up a sandboxed browser instance so you can interact with your popup, options, and background workers in real time.
-            </p>
-          </div>
-
-          <div className="bg-white/[0.03] backdrop-blur-[12px] border border-white/[0.08] rounded-2xl p-6 space-y-3">
-            <h3 className="text-sm font-bold text-white">Can I download the source code?</h3>
-            <p className="text-xs text-neutral-400 leading-relaxed">
-              Absolutely. In one click, you can export your extension as a standard production-ready ZIP archive. Extract it locally and load it into Chrome or Edge dev mode instantly.
-            </p>
-          </div>
+          <p className="text-neutral-400 mt-6 text-center text-xs">
+            Can't find what you're looking for?{' '}
+            <Link
+              href="#contact"
+              className="text-white font-medium hover:underline">
+              Contact our support team
+            </Link>
+          </p>
         </div>
       </section>
 
