@@ -362,14 +362,14 @@ export default function RootPage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="relative z-10 py-32 px-6 w-full bg-[#030303] border-t border-b border-white/[0.04] select-none overflow-hidden">
+      <section id="pricing" className="relative z-10 pt-16 pb-32 px-6 w-full bg-black border-t border-b border-white/[0.04] select-none overflow-hidden">
         {/* Background Large Text "Pricing" */}
-        <div className="absolute inset-x-0 top-16 flex justify-center pointer-events-none z-0 overflow-hidden">
-          <h2 className="text-[140px] sm:text-[220px] md:text-[280px] font-black tracking-tighter leading-none select-none"
+        <div className="absolute inset-x-0 top-8 flex justify-center pointer-events-none z-0 overflow-hidden">
+          <h2 className="text-[160px] sm:text-[240px] md:text-[320px] font-black tracking-tighter leading-none select-none"
             style={{ 
-              WebkitTextStroke: '1px rgba(255,255,255,0.25)',
-              color: 'transparent',
-              userSelect: 'none'
+              userSelect: 'none',
+              color: 'white',
+              opacity: 0.15
             }}
           >
             Pricing
@@ -377,7 +377,7 @@ export default function RootPage() {
         </div>
 
         {/* Section title above grid */}
-        <div className="text-center mb-16 relative z-10">
+        <div className="text-center mb-12 relative z-10 mt-8">
           <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/60 mb-3">Simple Pricing</p>
           <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight drop-shadow-lg">
             Build more, pay less
@@ -391,7 +391,7 @@ export default function RootPage() {
         <div className="relative">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto relative z-10">
             {/* Card 1: Free Plan */}
-            <div className="bg-[#111113]/90 backdrop-blur-[24px] border border-white/[0.12] rounded-[24px] p-8 flex flex-col justify-between min-h-[580px] shadow-2xl transition-all duration-300">
+            <div className="bg-white/[0.04] backdrop-blur-[20px] border border-white/[0.12] rounded-[24px] p-8 flex flex-col justify-between min-h-[580px] shadow-2xl transition-all duration-300 hover:bg-white/[0.07] hover:border-white/[0.2]">
               <div className="space-y-8">
                 <div className="space-y-2">
                   <span className="text-[12px] font-semibold text-neutral-400">Free Plan</span>
@@ -402,28 +402,28 @@ export default function RootPage() {
 
                 <ul className="space-y-4">
                   <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
                       <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
                     </div>
                     <span className="text-[13px] text-neutral-450">10 build credits on signup</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
                       <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
                     </div>
                     <span className="text-[13px] text-neutral-450">Popup UI preview</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
                       <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
                     </div>
-                    <span className="text-[13px] text-neutral-450">Download extension ZIP</span>
+                    <span className="text-[13px] text-neutral-455">Download extension ZIP</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
                       <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
                     </div>
-                    <span className="text-[13px] text-neutral-450">Community support</span>
+                    <span className="text-[13px] text-neutral-455">Community support</span>
                   </li>
                 </ul>
               </div>
@@ -437,7 +437,7 @@ export default function RootPage() {
             </div>
 
             {/* Card 2: Standard Plan */}
-            <div className="bg-[#111113]/90 backdrop-blur-[24px] border border-white/[0.12] rounded-[24px] p-8 flex flex-col justify-between min-h-[580px] shadow-2xl transition-all duration-300 relative">
+            <div className="bg-white/[0.06] backdrop-blur-[20px] border border-white/[0.25] rounded-[24px] p-8 flex flex-col justify-between min-h-[580px] shadow-2xl transition-all duration-300 hover:bg-white/[0.09] hover:border-white/[0.35] relative ring-1 ring-white/[0.1]">
               <div className="space-y-8">
                 <div className="space-y-2">
                   <span className="text-[12px] font-semibold text-neutral-400">Standard Plan</span>
@@ -448,28 +448,28 @@ export default function RootPage() {
 
                 <ul className="space-y-4">
                   <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
                       <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
                     </div>
                     <span className="text-[13px] text-neutral-450">100 build credits / month</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
                       <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
                     </div>
                     <span className="text-[13px] text-neutral-450">Everything in Free</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
                       <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
                     </div>
-                    <span className="text-[13px] text-neutral-450">Version history & rollback</span>
+                    <span className="text-[13px] text-neutral-455">Version history & rollback</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
                       <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
                     </div>
-                    <span className="text-[13px] text-neutral-450">Priority support</span>
+                    <span className="text-[13px] text-neutral-455">Priority support</span>
                   </li>
                 </ul>
               </div>
@@ -483,7 +483,7 @@ export default function RootPage() {
             </div>
 
             {/* Card 3: Pro Plan */}
-            <div className="bg-[#111113]/90 backdrop-blur-[24px] border border-white/[0.12] rounded-[24px] p-8 flex flex-col justify-between min-h-[580px] shadow-2xl transition-all duration-300">
+            <div className="bg-white/[0.04] backdrop-blur-[20px] border border-white/[0.12] rounded-[24px] p-8 flex flex-col justify-between min-h-[580px] shadow-2xl transition-all duration-300 hover:bg-white/[0.07] hover:border-white/[0.2]">
               <div className="space-y-8">
                 <div className="space-y-2">
                   <span className="text-[12px] font-semibold text-purple-400">Pro Plan</span>
@@ -494,34 +494,34 @@ export default function RootPage() {
 
                 <ul className="space-y-4">
                   <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
                       <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
                     </div>
                     <span className="text-[13px] text-neutral-450">400 build credits / month</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-[#111113] border border-white/[0.08] flex items-center justify-center shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
                       <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
                     </div>
                     <span className="text-[13px] text-neutral-450">Everything in Standard</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-[#111113] border border-white/[0.08] flex items-center justify-center shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
                       <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
                     </div>
-                    <span className="text-[13px] text-neutral-450">Live browser preview (Playwright)</span>
+                    <span className="text-[13px] text-neutral-455">Live browser preview (Playwright)</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-[#111113] border border-white/[0.08] flex items-center justify-center shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
                       <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
                     </div>
-                    <span className="text-[13px] text-neutral-450">AI self-healing debugger</span>
+                    <span className="text-[13px] text-neutral-455">AI self-healing debugger</span>
                   </li>
                   <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-[#111113] border border-white/[0.08] flex items-center justify-center shrink-0">
+                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
                       <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
                     </div>
-                    <span className="text-[13px] text-neutral-450">Early access to new features</span>
+                    <span className="text-[13px] text-neutral-455">Early access to new features</span>
                   </li>
                 </ul>
               </div>
@@ -534,7 +534,6 @@ export default function RootPage() {
               </Link>
             </div>
           </div>
-          <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#030303] to-transparent pointer-events-none z-20" />
         </div>
 
         {/* Bottom Controls */}
