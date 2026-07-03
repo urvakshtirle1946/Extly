@@ -362,14 +362,14 @@ export default function RootPage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="relative z-10 pt-16 pb-32 px-6 w-full bg-black border-t border-b border-white/[0.04] select-none overflow-hidden">
+      <section id="pricing" className="relative z-10 pt-16 pb-32 px-6 w-full bg-black select-none overflow-hidden">
         {/* Background Large Text "Pricing" with low opacity */}
         <div className="absolute inset-x-0 top-8 flex justify-center pointer-events-none z-0 overflow-hidden">
           <h2 className="text-[160px] sm:text-[240px] md:text-[320px] font-black tracking-tighter leading-none select-none"
             style={{ 
               userSelect: 'none',
               color: 'white',
-              opacity: 0.15
+              opacity: 0.35
             }}
           >
             Pricing
