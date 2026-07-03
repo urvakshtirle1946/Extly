@@ -362,12 +362,12 @@ export default function RootPage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="relative z-10 py-32 px-6 w-full bg-[#030303] border-t border-b border-white/[0.04] select-none overflow-hidden mt-10">
+      <section id="pricing" className="relative z-10 py-32 px-6 w-full bg-[#030303] border-t border-b border-white/[0.04] select-none overflow-hidden">
         {/* Background Large Text "Pricing" */}
         <div className="absolute inset-x-0 top-16 flex justify-center pointer-events-none z-0 overflow-hidden">
           <h2 className="text-[140px] sm:text-[220px] md:text-[280px] font-black tracking-tighter leading-none select-none"
             style={{ 
-              WebkitTextStroke: '1px rgba(255,255,255,0.08)',
+              WebkitTextStroke: '1px rgba(255,255,255,0.25)',
               color: 'transparent',
               userSelect: 'none'
             }}
@@ -378,160 +378,163 @@ export default function RootPage() {
 
         {/* Section title above grid */}
         <div className="text-center mb-16 relative z-10">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-neutral-500 mb-3">Simple Pricing</p>
-          <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight">
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/60 mb-3">Simple Pricing</p>
+          <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight drop-shadow-lg">
             Build more, pay less
           </h2>
-          <p className="text-neutral-400 text-sm mt-3 max-w-md mx-auto">
+          <p className="text-white/50 text-sm mt-3 max-w-md mx-auto">
             Start free. Purchase credits when you need more builds.
           </p>
         </div>
 
         {/* Pricing Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto relative z-10">
-          {/* Card 1: Free Plan */}
-          <div className="bg-[#111113]/90 backdrop-blur-[24px] border border-white/[0.12] rounded-[24px] p-8 flex flex-col justify-between min-h-[580px] shadow-2xl transition-all duration-300">
-            <div className="space-y-8">
-              <div className="space-y-2">
-                <span className="text-[12px] font-semibold text-neutral-400">Free Plan</span>
-                <h3 className="text-4xl font-extrabold text-white tracking-tight">Free</h3>
+        <div className="relative">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto relative z-10">
+            {/* Card 1: Free Plan */}
+            <div className="bg-[#111113]/90 backdrop-blur-[24px] border border-white/[0.12] rounded-[24px] p-8 flex flex-col justify-between min-h-[580px] shadow-2xl transition-all duration-300">
+              <div className="space-y-8">
+                <div className="space-y-2">
+                  <span className="text-[12px] font-semibold text-neutral-400">Free Plan</span>
+                  <h3 className="text-4xl font-extrabold text-white tracking-tight">Free</h3>
+                </div>
+                
+                <div className="h-[1px] bg-white/[0.06]" />
+
+                <ul className="space-y-4">
+                  <li className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
+                    </div>
+                    <span className="text-[13px] text-neutral-450">10 build credits on signup</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
+                    </div>
+                    <span className="text-[13px] text-neutral-450">Popup UI preview</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
+                    </div>
+                    <span className="text-[13px] text-neutral-450">Download extension ZIP</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
+                    </div>
+                    <span className="text-[13px] text-neutral-450">Community support</span>
+                  </li>
+                </ul>
               </div>
               
-              <div className="h-[1px] bg-white/[0.06]" />
-
-              <ul className="space-y-4">
-                <li className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                  </div>
-                  <span className="text-[13px] text-neutral-400">10 build credits on signup</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                  </div>
-                  <span className="text-[13px] text-neutral-400">Popup UI preview</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                  </div>
-                  <span className="text-[13px] text-neutral-400">Download extension ZIP</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                  </div>
-                  <span className="text-[13px] text-neutral-400">Community support</span>
-                </li>
-              </ul>
+              <Link 
+                href="/signup" 
+                className="mt-8 w-full py-3 bg-[#0d0d0e]/80 hover:bg-neutral-900 border border-white/[0.08] hover:border-white/[0.15] text-white text-center font-bold rounded-full text-xs transition-all duration-200"
+              >
+                Get Started
+              </Link>
             </div>
-            
-            <Link 
-              href="/signup" 
-              className="mt-8 w-full py-3 bg-[#0d0d0e]/80 hover:bg-neutral-900 border border-white/[0.08] hover:border-white/[0.15] text-white text-center font-bold rounded-full text-xs transition-all duration-200"
-            >
-              Get Started
-            </Link>
-          </div>
 
-          {/* Card 2: Standard Plan */}
-          <div className="bg-[#111113]/90 backdrop-blur-[24px] border border-white/[0.12] rounded-[24px] p-8 flex flex-col justify-between min-h-[580px] shadow-2xl transition-all duration-300 relative">
-            <div className="space-y-8">
-              <div className="space-y-2">
-                <span className="text-[12px] font-semibold text-neutral-400">Standard Plan</span>
-                <h3 className="text-4xl font-extrabold text-white tracking-tight">$9.99<span className="text-lg font-medium text-neutral-450">/m</span></h3>
+            {/* Card 2: Standard Plan */}
+            <div className="bg-[#111113]/90 backdrop-blur-[24px] border border-white/[0.12] rounded-[24px] p-8 flex flex-col justify-between min-h-[580px] shadow-2xl transition-all duration-300 relative">
+              <div className="space-y-8">
+                <div className="space-y-2">
+                  <span className="text-[12px] font-semibold text-neutral-400">Standard Plan</span>
+                  <h3 className="text-4xl font-extrabold text-white tracking-tight">$9.99<span className="text-lg font-medium text-neutral-450">/m</span></h3>
+                </div>
+                
+                <div className="h-[1px] bg-white/[0.06]" />
+
+                <ul className="space-y-4">
+                  <li className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
+                    </div>
+                    <span className="text-[13px] text-neutral-450">100 build credits / month</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
+                    </div>
+                    <span className="text-[13px] text-neutral-450">Everything in Free</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
+                    </div>
+                    <span className="text-[13px] text-neutral-450">Version history & rollback</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
+                    </div>
+                    <span className="text-[13px] text-neutral-450">Priority support</span>
+                  </li>
+                </ul>
               </div>
               
-              <div className="h-[1px] bg-white/[0.06]" />
-
-              <ul className="space-y-4">
-                <li className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                  </div>
-                  <span className="text-[13px] text-neutral-400">100 build credits / month</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                  </div>
-                  <span className="text-[13px] text-neutral-400">Everything in Free</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                  </div>
-                  <span className="text-[13px] text-neutral-400">Version history & rollback</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                  </div>
-                  <span className="text-[13px] text-neutral-400">Priority support</span>
-                </li>
-              </ul>
+              <Link 
+                href="/signup" 
+                className="mt-8 w-full py-3 bg-white hover:bg-neutral-100 text-black text-center font-bold rounded-full text-xs transition-all duration-205 shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+              >
+                Get Started
+              </Link>
             </div>
-            
-            <Link 
-              href="/signup" 
-              className="mt-8 w-full py-3 bg-white hover:bg-neutral-100 text-black text-center font-bold rounded-full text-xs transition-all duration-205 shadow-[0_0_20px_rgba(255,255,255,0.15)]"
-            >
-              Get Started
-            </Link>
-          </div>
 
-          {/* Card 3: Pro Plan */}
-          <div className="bg-[#111113]/90 backdrop-blur-[24px] border border-white/[0.12] rounded-[24px] p-8 flex flex-col justify-between min-h-[580px] shadow-2xl transition-all duration-300">
-            <div className="space-y-8">
-              <div className="space-y-2">
-                <span className="text-[12px] font-semibold text-purple-400">Pro Plan</span>
-                <h3 className="text-4xl font-extrabold text-white tracking-tight">$19.99<span className="text-lg font-medium text-neutral-450">/m</span></h3>
+            {/* Card 3: Pro Plan */}
+            <div className="bg-[#111113]/90 backdrop-blur-[24px] border border-white/[0.12] rounded-[24px] p-8 flex flex-col justify-between min-h-[580px] shadow-2xl transition-all duration-300">
+              <div className="space-y-8">
+                <div className="space-y-2">
+                  <span className="text-[12px] font-semibold text-purple-400">Pro Plan</span>
+                  <h3 className="text-4xl font-extrabold text-white tracking-tight">$19.99<span className="text-lg font-medium text-neutral-450">/m</span></h3>
+                </div>
+                
+                <div className="h-[1px] bg-white/[0.06]" />
+
+                <ul className="space-y-4">
+                  <li className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
+                    </div>
+                    <span className="text-[13px] text-neutral-450">400 build credits / month</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#111113] border border-white/[0.08] flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
+                    </div>
+                    <span className="text-[13px] text-neutral-450">Everything in Standard</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#111113] border border-white/[0.08] flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
+                    </div>
+                    <span className="text-[13px] text-neutral-450">Live browser preview (Playwright)</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#111113] border border-white/[0.08] flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
+                    </div>
+                    <span className="text-[13px] text-neutral-450">AI self-healing debugger</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#111113] border border-white/[0.08] flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
+                    </div>
+                    <span className="text-[13px] text-neutral-450">Early access to new features</span>
+                  </li>
+                </ul>
               </div>
               
-              <div className="h-[1px] bg-white/[0.06]" />
-
-              <ul className="space-y-4">
-                <li className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-neutral-900 border border-white/[0.08] flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                  </div>
-                  <span className="text-[13px] text-neutral-400">400 build credits / month</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#111113] border border-white/[0.08] flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                  </div>
-                  <span className="text-[13px] text-neutral-400">Everything in Standard</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#111113] border border-white/[0.08] flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                  </div>
-                  <span className="text-[13px] text-neutral-400">Live browser preview (Playwright)</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#111113] border border-white/[0.08] flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                  </div>
-                  <span className="text-[13px] text-neutral-400">AI self-healing debugger</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-[#111113] border border-white/[0.08] flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                  </div>
-                  <span className="text-[13px] text-neutral-400">Early access to new features</span>
-                </li>
-              </ul>
+              <Link 
+                href="/signup" 
+                className="mt-8 w-full py-3 bg-[#0d0d0e]/80 hover:bg-neutral-900 border border-white/[0.08] hover:border-white/[0.15] text-white text-center font-bold rounded-full text-xs transition-all duration-200"
+              >
+                Get Started
+              </Link>
             </div>
-            
-            <Link 
-              href="/signup" 
-              className="mt-8 w-full py-3 bg-[#0d0d0e]/80 hover:bg-neutral-900 border border-white/[0.08] hover:border-white/[0.15] text-white text-center font-bold rounded-full text-xs transition-all duration-200"
-            >
-              Get Started
-            </Link>
           </div>
+          <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#030303] to-transparent pointer-events-none z-20" />
         </div>
 
         {/* Bottom Controls */}
