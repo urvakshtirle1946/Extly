@@ -19,6 +19,7 @@ export default function RootPage() {
   const apiFetch = useApiFetch()
   const [creatingProject, setCreatingProject] = useState(false)
   const [copiedEmail, setCopiedEmail] = useState(false)
+  const [isYearly, setIsYearly] = useState(false)
 
   const faqItems = [
     {
@@ -339,14 +340,20 @@ export default function RootPage() {
               >
                 Get Started
               </Link>
-            </div>
-
-            {/* Card 2: Standard Plan */}
+                        {/* Card 2: Standard Plan */}
             <div className="bg-white/[0.06] backdrop-blur-[20px] border border-white/[0.25] rounded-[24px] p-8 flex flex-col justify-between min-h-[580px] shadow-2xl transition-all duration-300 hover:bg-white/[0.09] hover:border-white/[0.35] relative ring-1 ring-white/[0.1]">
               <div className="space-y-8">
                 <div className="space-y-2">
                   <span className="text-[12px] font-semibold text-neutral-400">Standard Plan</span>
-                  <h3 className="text-4xl font-extrabold text-white tracking-tight">$9.99<span className="text-lg font-medium text-neutral-450">/m</span></h3>
+                  <h3 className="text-4xl font-extrabold text-white tracking-tight">
+                    {isYearly ? '$7.99' : '$9.99'}
+                    <span className="text-lg font-medium text-neutral-450">/m</span>
+                  </h3>
+                  {isYearly && (
+                    <span className="text-[10px] text-neutral-500 block mt-1">
+                      Billed yearly ($95.88/yr)
+                    </span>
+                  )}
                 </div>
                 
                 <div className="h-[1px] bg-white/[0.06]" />
@@ -380,10 +387,10 @@ export default function RootPage() {
               </div>
               
               <Link 
-                href="/signup" 
+                href={user ? "/dashboard?tab=billing" : "/signup"} 
                 className="mt-8 w-full py-3 bg-white hover:bg-neutral-100 text-black text-center font-bold rounded-full text-xs transition-all duration-205 shadow-[0_0_20px_rgba(255,255,255,0.15)]"
               >
-                Get Started
+                {user ? "Upgrade Plan" : "Get Started"}
               </Link>
             </div>
 
@@ -392,7 +399,15 @@ export default function RootPage() {
               <div className="space-y-8">
                 <div className="space-y-2">
                   <span className="text-[12px] font-semibold text-purple-400">Pro Plan</span>
-                  <h3 className="text-4xl font-extrabold text-white tracking-tight">$19.99<span className="text-lg font-medium text-neutral-450">/m</span></h3>
+                  <h3 className="text-4xl font-extrabold text-white tracking-tight">
+                    {isYearly ? '$15.99' : '$19.99'}
+                    <span className="text-lg font-medium text-neutral-450">/m</span>
+                  </h3>
+                  {isYearly && (
+                    <span className="text-[10px] text-neutral-500 block mt-1">
+                      Billed yearly ($191.88/yr)
+                    </span>
+                  )}
                 </div>
                 
                 <div className="h-[1px] bg-white/[0.06]" />
@@ -402,7 +417,7 @@ export default function RootPage() {
                     <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
                       <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
                     </div>
-                    <span className="text-[13px] text-neutral-450">400 build credits / month</span>
+                    <span className="text-[13px] text-neutral-455">400 build credits / month</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
@@ -432,10 +447,10 @@ export default function RootPage() {
               </div>
               
               <Link 
-                href="/signup" 
+                href={user ? "/dashboard?tab=billing" : "/signup"} 
                 className="mt-8 w-full py-3 bg-[#0d0d0e]/80 hover:bg-neutral-900 border border-white/[0.08] hover:border-white/[0.15] text-white text-center font-bold rounded-full text-xs transition-all duration-200"
               >
-                Get Started
+                {user ? "Upgrade Plan" : "Get Started"}
               </Link>
             </div>
           </div>
@@ -446,7 +461,12 @@ export default function RootPage() {
           {/* Switch: Billed Yearly */}
           <label className="flex items-center gap-3 cursor-pointer select-none">
             <div className="relative">
-              <input type="checkbox" className="sr-only peer" />
+              <input 
+                type="checkbox" 
+                className="sr-only peer" 
+                checked={isYearly} 
+                onChange={(e) => setIsYearly(e.target.checked)} 
+              />
               <div className="w-9 h-5 bg-neutral-900 border border-white/[0.08] rounded-full transition-colors duration-200 peer-checked:bg-white"></div>
               <div className="absolute left-[3px] top-[3px] w-3.5 h-3.5 bg-white rounded-full transition-transform duration-200 transform peer-checked:translate-x-4 peer-checked:bg-black"></div>
             </div>
