@@ -378,7 +378,7 @@ export default function RootPage() {
 
 
         {/* Pricing Cards Grid */}
-        <div className="relative">
+        <div className="relative mt-16">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto relative z-10">
             {/* Card 1: Free Plan */}
             <div className="bg-white/[0.04] backdrop-blur-[20px] border border-white/[0.12] rounded-[24px] p-8 flex flex-col justify-between min-h-[580px] shadow-2xl transition-all duration-300 hover:bg-white/[0.07] hover:border-white/[0.2]">
