@@ -376,16 +376,6 @@ export default function RootPage() {
           </h2>
         </div>
 
-        {/* Section title above grid */}
-        <div className="text-center mb-12 relative z-10 mt-8">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/60 mb-3">Simple Pricing</p>
-          <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight drop-shadow-lg">
-            Build more, pay less
-          </h2>
-          <p className="text-white/50 text-sm mt-3 max-w-md mx-auto">
-            Start free. Purchase credits when you need more builds.
-          </p>
-        </div>
 
         {/* Pricing Cards Grid */}
         <div className="relative">
