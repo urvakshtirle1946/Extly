@@ -472,7 +472,7 @@ export default function RootPage() {
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" className="relative z-10 py-24 px-4 md:px-6 max-w-5xl w-full mx-auto select-none font-sans border-t border-neutral-900/60">
+      <section id="faq" className="relative z-10 py-24 px-4 md:px-6 max-w-5xl w-full mx-auto select-none font-sans">
         <div className="mx-auto max-w-xl text-center">
           <h2 className="text-balance text-3xl font-extrabold md:text-4xl text-white">
             Frequently Asked Questions
