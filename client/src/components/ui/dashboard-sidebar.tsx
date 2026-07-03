@@ -6,7 +6,6 @@ import {
   Search, 
   LayoutDashboard, 
   FolderKanban, 
-  Users, 
   Settings, 
   LogOut,
   Hash,
@@ -61,16 +60,6 @@ const mockNavGroups: NavGroupData[] = [
         children: [
           { id: 'p-active', title: 'Active', icon: Hash },
           { id: 'p-archived', title: 'Archived', icon: Hash },
-        ]
-      },
-      { 
-        id: 'team', 
-        title: 'Team', 
-        icon: Users,
-        children: [
-          { id: 't-design', title: 'Designers', icon: Hash },
-          { id: 't-eng', title: 'Engineering', icon: Hash },
-          { id: 't-product', title: 'Product', icon: Hash },
         ]
       },
     ]
@@ -349,14 +338,6 @@ export function SidebarNav({
             title: p.name,
             icon: Hash
           }))
-        },
-        { 
-          id: 'team', 
-          title: 'Team', 
-          icon: Users,
-          children: [
-            { id: 't-urvaksh', title: 'Urvaksh Tirle', icon: Hash }
-          ]
         },
       ]
     }
