@@ -1,14 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { AuthProvider } from "@/context/AuthContext";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -35,7 +29,7 @@ export default function RootLayout({
     <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_c2VsZWN0LWdyb3VzZS02My5jbGVyay5hY2NvdW50cy5kZXYk'}>
       <html lang="en">
         <body
-          className={`${inter.variable} ${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950 text-slate-100`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950 text-slate-100`}
         >
           <AuthProvider>
             {children}
