@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApiFetch } from '@/utils/api';
-import { ExtlyLogoMark } from '@/components/ui/extly-logo';
+import { PromptexLogoMark } from '@/components/ui/promptex-logo';
 
 // Pro Credits Options & Prices
 const PRO_CREDITS_OPTIONS = [
@@ -96,7 +96,7 @@ export default function BillingPage() {
 
     openCheckout({
       amount: price,           // ₹price
-      name: 'Extly',
+      name: 'Promptex',
       description: `Pro Plan – ${formatCredits(activePro.credits)}`,
       onSuccess: async ({ payment_id, order_id }) => {
         try {
@@ -190,22 +190,22 @@ export default function BillingPage() {
 
   return (
     <div className="flex-1 overflow-y-auto p-6 md:p-8 relative z-10 max-w-5xl w-full mx-auto font-sans text-neutral-200">
-      {/* Top Section - Extly Free & Usage Row */}
+      {/* Top Section - Promptex Free & Usage Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         
-        {/* Extly Free Usage Card */}
+        {/* Promptex Free Usage Card */}
         <div className="bg-[#131315]/90 border border-neutral-900 rounded-2xl p-5 flex flex-col justify-between shadow-lg shadow-black/20">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2.5">
                 {/* Logo Gradient Icon */}
-                <div className="px-2 h-8 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center shadow-md">
-                  <ExtlyLogoMark width={38} height={10} />
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center shadow-md">
+                  <PromptexLogoMark width={16} height={16} />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-[14px] font-bold text-white leading-none">
-                      {activePlan === 'pro' ? 'Extly Pro' : 'Extly Free'}
+                      {activePlan === 'pro' ? 'Promptex Pro' : 'Promptex Free'}
                     </span>
                     <button className="px-2 py-0.5 bg-neutral-900 border border-neutral-850 hover:bg-neutral-800 text-[10px] text-neutral-300 font-semibold rounded transition-colors uppercase tracking-wider">
                       Manage

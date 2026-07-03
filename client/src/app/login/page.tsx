@@ -2,7 +2,7 @@
 
 import { SignIn } from '@clerk/nextjs'
 import Link from 'next/link'
-import { ExtlyLogo } from '@/components/ui/extly-logo'
+import { PromptexLogo } from '@/components/ui/promptex-logo'
 
 export default function LoginPage() {
   return (
@@ -14,7 +14,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md z-10 flex flex-col items-center gap-8">
         {/* Brand */}
         <Link href="/" className="group hover:opacity-80 transition-opacity">
-          <ExtlyLogo width={156} height={40} />
+          <PromptexLogo />
         </Link>
 
         {/* Clerk SignIn component — appearance customized to match dark theme */}

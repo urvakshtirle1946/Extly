@@ -22,7 +22,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Extly - Build Chrome Extensions with AI Chat",
+  title: "Promptex - Build Chrome Extensions with AI Chat",
   description: "Describe your browser extension in natural language. Watch the AI generate files, test in a live preview environment, self-heal, and download a working Manifest V3 zip.",
 };
 

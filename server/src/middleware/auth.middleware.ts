@@ -38,7 +38,7 @@ export async function authMiddleware(req: AuthenticatedRequest, res: Response, n
       azp && (
         azp.includes('localhost') || 
         azp.includes('vercel.app') || 
-        azp.includes('extly.io')
+        azp.includes('promptex.io')
       )
 
     // Verify the Clerk session token

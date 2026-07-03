@@ -84,7 +84,7 @@ const mockBottomItems: NavItemData[] = [
 ];
 function WorkspaceSwitcher({ selected, onSelect, userEmail }: { selected?: string, onSelect?: (ws: string) => void, userEmail?: string }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [internalSelected, setInternalSelected] = useState("Urvaksh's Extly");
+  const [internalSelected, setInternalSelected] = useState("Urvaksh's Promptex");
   
   const current = selected || internalSelected;
   const handleSelect = onSelect || setInternalSelected;

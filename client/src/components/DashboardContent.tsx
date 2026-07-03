@@ -151,7 +151,7 @@ const TEMPLATES: Template[] = [
   ],
   "permissions": ["activeTab"]
 }`,
-      'content.js': `console.log("Extly Page Injector active!");
+      'content.js': `console.log("Promptex Page Injector active!");
 const div = document.createElement('div');
 div.style.cssText = 'position: fixed; bottom: 10px; right: 10px; background: #6366f1; color: white; padding: 8px; border-radius: 6px; font-size: 12px; z-index: 99999;';
 div.textContent = 'Page Injector Active';
@@ -829,7 +829,7 @@ export default function DashboardContent() {
                 {sidebarActiveId.toUpperCase()}
               </h2>
               <p className="text-[11px] text-neutral-550 max-w-xs leading-relaxed">
-                This section is currently under development. Extly will support this workspace feature in a future release.
+                This section is currently under development. Promptex will support this workspace feature in a future release.
               </p>
             </div>
           )
@@ -843,7 +843,7 @@ export default function DashboardContent() {
               {/* New AI Prompt Box */}
               <div className="w-full text-left">
                 <PromptInputBox 
-                  placeholder="Ask Extly to create a prototype..."
+                  placeholder="Ask Promptex to create a prototype..."
                   isLoading={creating}
                   onSend={handleQuickCreateFromMessage}
                 />

@@ -43,7 +43,7 @@ export function useRazorpay() {
     async ({
       amount,
       currency = 'INR',
-      name = 'Extly',
+      name = 'Promptex',
       description = 'Pro Plan Upgrade',
       onSuccess,
       onError,

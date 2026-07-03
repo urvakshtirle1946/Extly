@@ -37,7 +37,7 @@ app.use(
         !origin ||                          // Postman / server-to-server
         origin.includes('localhost') ||     // Local dev
         origin.includes('vercel.app') ||    // Any Vercel preview or production URL
-        origin.includes('extly.io')         // Future custom domain
+        origin.includes('promptex.io')         // Future custom domain
       ) {
         callback(null, true)
       } else {
@@ -112,7 +112,7 @@ app.post('/api/payment/verify', authMiddleware as any, handleVerifyPayment as an
 // ============================================================================
 const requireAdminKey = (req: any, res: any, next: any) => {
   const adminKey = req.headers['x-admin-key']
-  const secretKey = process.env.ADMIN_SECRET_KEY || 'extly_secret_admin_key_2026'
+  const secretKey = process.env.ADMIN_SECRET_KEY || 'promptex_secret_admin_key_2026'
   if (!adminKey || adminKey !== secretKey) {
     return res.status(403).json({ error: 'Unauthorized: Invalid admin key' })
   }

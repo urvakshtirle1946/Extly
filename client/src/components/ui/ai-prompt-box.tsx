@@ -14,7 +14,7 @@ interface PromptInputBoxProps {
 }
 
 export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref: React.Ref<HTMLDivElement>) => {
-  const { onSend = () => {}, isLoading = false, placeholder = "Ask Extly to create a Chrome extension...", className } = props;
+  const { onSend = () => {}, isLoading = false, placeholder = "Ask Promptex to create a Chrome extension...", className } = props;
   const [input, setInput] = React.useState("");
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 

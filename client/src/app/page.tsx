@@ -8,7 +8,7 @@ import Link from 'next/link'
 import { Code, Loader2 } from 'lucide-react'
 import { useApiFetch } from '@/utils/api'
 import { NeatGradient } from '@firecms/neat'
-import { ExtlyLogo } from '@/components/ui/extly-logo'
+import { PromptexLogo } from '@/components/ui/promptex-logo'
 import { PromptInputBox } from '@/components/ui/ai-prompt-box'
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 
@@ -217,8 +217,10 @@ export default function RootPage() {
 
       {/* Header */}
       <header className="relative z-10 h-16 flex items-center justify-between px-8 shrink-0 bg-[#0c0c0e] border-b border-neutral-900/60">
-        {/* Logo */}
-        <ExtlyLogo width={220} height={56} />
+        {/* Logo - Calligraphic Promptex Text */}
+        <Link href="/" className="group hover:opacity-85 transition-opacity">
+          <PromptexLogo />
+        </Link>
 
         {/* Auth nav — Clerk-aware */}
         <nav className="flex items-center space-x-3">
@@ -253,7 +255,7 @@ export default function RootPage() {
         <div className="text-center space-y-7 w-full">
           <div className="space-y-4">
             <h1 className="text-4xl sm:text-[62px] font-extrabold tracking-tight text-white leading-[1.1] drop-shadow-lg">
-              Build extensions with Extly
+              Build extensions with Promptex
             </h1>
             <p className="text-[17px] sm:text-[19px] text-slate-300 max-w-xl mx-auto font-medium leading-relaxed mt-3">
               Create Chrome extensions by chatting with AI
@@ -262,7 +264,7 @@ export default function RootPage() {
 
           <div className="w-full text-left">
             <PromptInputBox
-              placeholder="Ask Extly to create a prototype..."
+              placeholder="Ask Promptex to create a prototype..."
               onSend={handlePromptSend}
             />
           </div>
