@@ -107,7 +107,7 @@ export default function RootPage() {
           loop
           muted
           playsInline
-          className="w-full h-full object-cover opacity-50"
+          className="w-full h-full object-cover opacity-80"
         />
       </div>
 
@@ -453,11 +453,6 @@ export default function RootPage() {
           <span>© 2026</span>
         </div>
       </footer>
-
-      {/* NEAT watermark */}
-      <div className="fixed bottom-3 right-4 z-10 pointer-events-none select-none">
-        <span className="text-[9px] text-white/30 font-bold uppercase tracking-wider">NEAT</span>
-      </div>
     </div>
   )
 }
