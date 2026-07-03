@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import DashboardContent from '@/components/DashboardContent'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Code, Loader2, Check } from 'lucide-react'
 import { useApiFetch } from '@/utils/api'
 import { PromptexLogo, PromptexLogoMark } from '@/components/ui/promptex-logo'
@@ -126,15 +127,14 @@ export default function RootPage() {
   return (
     <div className="min-h-screen text-white overflow-y-auto relative font-sans flex flex-col scroll-smooth">
 
-      {/* Background Video */}
+      {/* Background Image */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-black">
-        <video
-          src="/Hero.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-full object-cover [transform:translate3d(0,0,0)] [backface-visibility:hidden]"
+        <Image
+          src="/Hero.jpg"
+          alt="Promptex background"
+          fill
+          priority
+          className="object-cover [transform:translate3d(0,0,0)] [backface-visibility:hidden]"
         />
       </div>
 
@@ -340,7 +340,9 @@ export default function RootPage() {
               >
                 Get Started
               </Link>
-                        {/* Card 2: Standard Plan */}
+            </div>
+
+            {/* Card 2: Standard Plan */}
             <div className="bg-white/[0.06] backdrop-blur-[20px] border border-white/[0.25] rounded-[24px] p-8 flex flex-col justify-between min-h-[580px] shadow-2xl transition-all duration-300 hover:bg-white/[0.09] hover:border-white/[0.35] relative ring-1 ring-white/[0.1]">
               <div className="space-y-8">
                 <div className="space-y-2">
