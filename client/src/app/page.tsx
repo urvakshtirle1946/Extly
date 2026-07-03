@@ -107,7 +107,7 @@ export default function RootPage() {
           loop
           muted
           playsInline
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover [transform:translate3d(0,0,0)] [backface-visibility:hidden]"
         />
       </div>
 
