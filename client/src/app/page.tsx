@@ -204,8 +204,8 @@ export default function RootPage() {
       <main className="min-h-screen flex flex-col items-center justify-center px-6 max-w-4xl w-full mx-auto relative z-10 pt-16 pb-20 select-none font-sans">
         <div className="text-center space-y-7 w-full my-auto">
           <div className="space-y-4">
-            <h1 className="text-4xl sm:text-[62px] font-extrabold tracking-tight text-white leading-[1.1] drop-shadow-lg">
-              Build extensions with Promptex
+            <h1 className="text-4xl sm:text-[64px] font-serif-yc tracking-tight text-white leading-[1.1] font-normal">
+              Build extensions <span className="italic">with Promptex</span>
             </h1>
             <p className="text-[17px] sm:text-[19px] text-slate-300 max-w-xl mx-auto font-medium leading-relaxed mt-3">
               Create Chrome extensions by chatting with AI
@@ -238,8 +238,8 @@ export default function RootPage() {
           <div className="inline-block px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-neutral-400 text-[10px] font-bold uppercase tracking-widest mb-2">
             Workflow
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            How Promptex Works
+          <h2 className="text-3xl sm:text-4xl font-serif-yc text-white tracking-tight font-normal">
+            How Promptex <span className="italic">Works</span>
           </h2>
           <p className="text-[15px] text-neutral-450 max-w-md mx-auto">
             From idea to Chrome Extension in 3 simple steps
@@ -360,7 +360,7 @@ export default function RootPage() {
       <section id="pricing" className="relative z-10 pt-16 pb-32 px-6 w-full select-none overflow-hidden">
         {/* Background Large Text "Pricing" with low opacity */}
         <div className="absolute inset-x-0 -top-16 flex justify-center pointer-events-none z-0 overflow-hidden">
-          <h2 className="text-[160px] sm:text-[240px] md:text-[320px] font-bold tracking-tighter leading-[1.2] pt-10 select-none text-white"
+          <h2 className="text-[160px] sm:text-[240px] md:text-[320px] font-serif-yc font-normal tracking-tighter leading-[1.2] pt-10 select-none text-white italic"
             style={{ 
               userSelect: 'none',
               filter: 'drop-shadow(0 0 35px rgba(255,255,255,0.25))'
@@ -568,8 +568,8 @@ export default function RootPage() {
       {/* FAQ Section */}
       <section id="faq" className="relative z-10 py-24 px-4 md:px-6 max-w-5xl w-full mx-auto select-none font-sans">
         <div className="mx-auto max-w-xl text-center">
-          <h2 className="text-balance text-3xl font-extrabold md:text-4xl text-white">
-            Frequently Asked Questions
+          <h2 className="text-balance text-3xl font-serif-yc md:text-4xl text-white font-normal">
+            Frequently Asked <span className="italic">Questions</span>
           </h2>
           <p className="text-neutral-400 mt-4 text-balance text-sm">
             Discover quick and comprehensive answers to common questions about our platform, services, and features.

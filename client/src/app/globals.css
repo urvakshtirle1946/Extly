@@ -20,6 +20,9 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  .font-serif-yc {
+    font-family: 'Source Serif 4', Georgia, Cambria, "Times New Roman", Times, serif;
+  }
 }
 
 /* Premium Minimalist Floating Pill Scrollbars */
