@@ -43,6 +43,7 @@ import {
 } from 'lucide-react'
 import { InteractiveFolderGallery } from '@/components/ui/interactive-folder-gallery'
 import { PromptInputBox } from '@/components/ui/ai-prompt-box'
+import { SidebarNav } from '@/components/ui/dashboard-sidebar'
 import { CommandPalette } from '@/components/ui/be-ui-command-palette'
 import BillingPage from '@/components/BillingPage'
 
@@ -419,7 +420,7 @@ export default function DashboardContent() {
         bloomIntensity: 1.9,
         bloomThreshold: 0.6,
         chromaticAberration: 17,
-        shapeType: 'shape-type-unspecified' as any || 'ribbon' as const,
+        shapeType: 'ribbon' as const,
         shapeRotationX: 0.3480000000000001,
         shapeRotationY: -26.783,
         shapeRotationZ: -0.29,
