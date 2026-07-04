@@ -137,6 +137,8 @@ export default function RootPage() {
           playsInline
           className="w-full h-full object-cover"
         />
+        {/* Dark overlay to make typography pop */}
+        <div className="absolute inset-0 bg-black/65 z-10" />
       </div>
 
       {/* Floating Header Pill */}
