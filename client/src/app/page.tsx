@@ -21,6 +21,33 @@ export default function RootPage() {
   const [creatingProject, setCreatingProject] = useState(false)
   const [copiedEmail, setCopiedEmail] = useState(false)
   const [isYearly, setIsYearly] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          video.play().catch((err) => {
+            console.warn("Autoplay prevented:", err)
+          })
+        } else {
+          video.pause()
+        }
+      },
+      {
+        threshold: 0.2,
+      }
+    )
+
+    observer.observe(video)
+
+    return () => {
+      observer.unobserve(video)
+    }
+  }, [])
 
   const faqItems = [
     {
@@ -45,15 +72,16 @@ export default function RootPage() {
     },
   ]
 
-  // Intercept pending prompt after successful login
+  // Intercept pending prompt after successful login/signup
   useEffect(() => {
     async function checkPendingPrompt() {
       if (user && !loading) {
         const pendingPrompt = localStorage.getItem('pending_prompt')
         if (pendingPrompt) {
+          localStorage.removeItem('pending_prompt') // clear early to avoid double-fire
           setCreatingProject(true)
           try {
-            const name = pendingPrompt.slice(0, 30).trim() + '...' || 'AI Extension'
+            const name = pendingPrompt.slice(0, 40).trim() + (pendingPrompt.length > 40 ? '...' : '') || 'AI Extension'
             const data = await apiFetch('/api/projects', {
               method: 'POST',
               body: JSON.stringify({
@@ -63,8 +91,14 @@ export default function RootPage() {
                 files: {}
               })
             })
-            localStorage.removeItem('pending_prompt')
-            router.push(`/projects/${data.project.id}`)
+            // API returns either { id } or { project: { id } } — handle both
+            const projectId = data.id || data.project?.id
+            if (projectId) {
+              router.push(`/projects/${projectId}`)
+            } else {
+              console.error('No project ID in response', data)
+              setCreatingProject(false)
+            }
           } catch (err) {
             console.error('Failed to auto-create project:', err)
             setCreatingProject(false)
@@ -79,9 +113,9 @@ export default function RootPage() {
     if (!message.trim()) return
 
     if (!user) {
-      // Not logged in — save prompt and redirect to login
+      // Not logged in — save prompt and redirect to signup
       localStorage.setItem('pending_prompt', message)
-      router.push('/login')
+      router.push('/signup')
       return
     }
 
@@ -105,21 +139,20 @@ export default function RootPage() {
     }
   }
 
-  if (loading || creatingProject) {
+  // Only block the UI for active project creation (user-triggered)
+  if (creatingProject) {
     return (
-      <div className="min-h-screen bg-[#A1A4B7] flex flex-col items-center justify-center space-y-4 select-none">
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center space-y-4 select-none">
         <Loader2 className="w-6 h-6 text-white animate-spin" />
-        {creatingProject && (
-          <p className="text-white/70 text-xs font-bold uppercase tracking-wider animate-pulse">
-            Initializing extension builder...
-          </p>
-        )}
+        <p className="text-white/70 text-xs font-bold uppercase tracking-wider animate-pulse">
+          Initializing extension builder...
+        </p>
       </div>
     )
   }
 
   // Logged in → full dashboard
-  if (user) {
+  if (!loading && user) {
     return <DashboardContent />
   }
 
@@ -254,64 +287,35 @@ export default function RootPage() {
       </main>
 
       {/* How it Works Section */}
-      <section id="how-it-works" className="relative z-10 py-24 px-6 max-w-5xl w-full mx-auto select-none font-sans">
-        {/* Top badge */}
-        <div className="flex justify-center mb-6">
+      <section id="how-it-works" className="relative z-10 py-16 px-6 max-w-5xl w-full mx-auto select-none font-sans">
+        {/* Badge */}
+        <div className="flex justify-center mb-10">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-medium tracking-wider uppercase bg-[#0c0c0d] border border-white/[0.08] text-neutral-400 rounded-full">
             <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
             How it works
           </span>
         </div>
 
-        {/* Main heading */}
-        <h2 className="text-3xl sm:text-[44px] font-extrabold text-white tracking-tight leading-[1.15] text-center max-w-2xl mx-auto mb-16">
-          Three steps to your extension.<br />
-          <span className="text-neutral-450 font-bold">One ZIP to install everywhere.</span>
-        </h2>
-
-        {/* 3-Column Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 max-w-4xl mx-auto text-center">
-          {/* Step 1 */}
-          <div className="space-y-4">
-            <div className="mx-auto w-12 h-12 border border-white/[0.15] rounded-xl flex items-center justify-center text-neutral-400 bg-white/[0.01]">
-              <Code className="w-5 h-5" />
-            </div>
-            <h3 className="text-sm font-bold text-white">Draft prompt</h3>
-            <p className="text-xs text-neutral-400 leading-relaxed max-w-[240px] mx-auto">
-              Describe your browser extension in plain English.
-            </p>
-          </div>
-
-          {/* Step 2 */}
-          <div className="space-y-4">
-            <div className="mx-auto w-12 h-12 border border-white/[0.15] rounded-xl flex items-center justify-center text-neutral-400 bg-white/[0.01]">
-              <Terminal className="w-5 h-5" />
-            </div>
-            <h3 className="text-sm font-bold text-white">Live AI generation</h3>
-            <p className="text-xs text-neutral-400 leading-relaxed max-w-[240px] mx-auto">
-              Watch the AI write manifest, assets, and JS files live.
-            </p>
-          </div>
-
-          {/* Step 3 */}
-          <div className="space-y-4">
-            <div className="mx-auto w-12 h-12 border border-white/[0.15] rounded-xl flex items-center justify-center text-neutral-400 bg-white/[0.01]">
-              <Download className="w-5 h-5" />
-            </div>
-            <h3 className="text-sm font-bold text-white">Export extension</h3>
-            <p className="text-xs text-neutral-400 leading-relaxed max-w-[240px] mx-auto">
-              Download your extension ZIP in one click.
-            </p>
-          </div>
-        </div>
-
-        {/* Bottom capsule */}
-        <div className="mt-16 flex justify-center">
-          <div className="px-6 py-2.5 bg-white/[0.02] border border-white/[0.08] hover:border-white/[0.12] rounded-full text-[11px] text-neutral-400 transition-all cursor-pointer">
-            From a simple prompt to your <span className="font-bold text-white">working extension</span>
+        {/* Workspace Screenshot — breaks out of section max-width */}
+        <div className="-mx-6 sm:-mx-12 lg:-mx-24 xl:-mx-40 relative">
+          {/* Glow halo */}
+          <div className="absolute inset-x-0 -top-8 h-32 bg-white/[0.03] blur-3xl rounded-full pointer-events-none" />
+          <div className="relative rounded-2xl overflow-hidden border border-white/[0.08] shadow-[0_0_80px_rgba(0,0,0,0.9)] ring-1 ring-white/[0.04]">
+            <video
+              ref={videoRef}
+              src="/platform.mp4"
+              loop
+              muted
+              playsInline
+              className="w-full h-auto block"
+            />
+            {/* Bottom fade */}
+            <div className="absolute bottom-0 inset-x-0 h-28 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
           </div>
         </div>
       </section>
+
+
 
       {/* Pricing Section */}
       <section id="pricing" className="relative z-10 pt-16 pb-32 px-6 w-full select-none overflow-hidden">

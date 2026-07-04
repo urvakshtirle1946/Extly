@@ -128,6 +128,12 @@ export async function initDb() {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS total_credits INTEGER DEFAULT 10;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS used_credits INTEGER DEFAULT 0;
     `)
+    // BYOK workspace columns
+    await client.query(`
+      ALTER TABLE projects ADD COLUMN IF NOT EXISTS workspace_type TEXT DEFAULT 'standard';
+      ALTER TABLE projects ADD COLUMN IF NOT EXISTS byok_api_key TEXT;
+      ALTER TABLE projects ADD COLUMN IF NOT EXISTS byok_provider TEXT;
+    `)
     console.log('[Database] Migrations executed successfully!')
     
     client.release()

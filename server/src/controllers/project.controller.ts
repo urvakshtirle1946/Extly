@@ -1,5 +1,6 @@
 import { Response } from 'express'
 import { db } from '../config/db'
+import { encryptKey } from '../utils/encryption'
 import { AuthenticatedRequest } from '../middleware/auth.middleware'
 
 export async function handleGetProjects(req: AuthenticatedRequest, res: Response) {
@@ -61,21 +62,31 @@ export async function handleGetProject(req: AuthenticatedRequest, res: Response)
 
 export async function handleCreateProject(req: AuthenticatedRequest, res: Response) {
   const userId = req.user?.id
-  const { name, description, template, files } = req.body
+  const { name, description, template, files, workspace_type, byok_api_key, byok_provider } = req.body
 
   if (!userId) return res.status(401).json({ error: 'Unauthorized' })
   if (!name || !description) {
     return res.status(400).json({ error: 'Name and description are required' })
   }
 
+  // Validate BYOK: key is required when workspace type is byok
+  if (workspace_type === 'byok' && !byok_api_key) {
+    return res.status(400).json({ error: 'API key is required for BYOK workspace.' })
+  }
+
   try {
-    // Start transaction
     await db.query('BEGIN')
 
-    // 1. Create project
+    // Encrypt the BYOK API key before storing
+    const encryptedKey = (workspace_type === 'byok' && byok_api_key)
+      ? encryptKey(byok_api_key)
+      : null
+
+    // 1. Create project with workspace metadata
     const projectResult = await db.query(
-      'INSERT INTO projects (user_id, name, description, status) VALUES ($1, $2, $3, $4) RETURNING *',
-      [userId, name, description, 'idle']
+      `INSERT INTO projects (user_id, name, description, status, workspace_type, byok_api_key, byok_provider)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [userId, name, description, 'idle', workspace_type || 'standard', encryptedKey, byok_provider || null]
     )
     const project = projectResult.rows[0]
 

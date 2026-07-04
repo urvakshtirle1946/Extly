@@ -39,7 +39,9 @@ import {
   FileText,
   Mail,
   ExternalLink,
-  Home
+  Home,
+  Key,
+  Lock
 } from 'lucide-react'
 import { InteractiveFolderGallery } from '@/components/ui/interactive-folder-gallery'
 import { PromptInputBox } from '@/components/ui/ai-prompt-box'
@@ -206,8 +208,8 @@ export default function DashboardContent() {
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
   
-  // Live Animated Gradient Canvas Ref
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  // Background video ref (unused — video is self-contained)
+  const videoRef = useRef<HTMLVideoElement>(null)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [selectedTemplate, setSelectedTemplate] = useState('blank')
@@ -218,10 +220,13 @@ export default function DashboardContent() {
   // Quick Prompt Idea State
   const [quickPrompt, setQuickPrompt] = useState('')
   const [activeTab, setActiveTab] = useState<'projects' | 'recent' | 'gallery'>('projects')
+  const [workspaceType, setWorkspaceType] = useState<'standard' | 'byok'>('standard')
+  const [byokProvider, setByokProvider] = useState('openrouter')
+  const [byokApiKey, setByokApiKey] = useState('')
   
   // Sidebar Nav States
   const [sidebarActiveId, setSidebarActiveId] = useState('home')
-  const [activeWorkspace, setActiveWorkspace] = useState('Acme Corp')
+  const [activeWorkspace, setActiveWorkspace] = useState('')
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false)
   
@@ -344,131 +349,6 @@ export default function DashboardContent() {
     }
   }, [user])
 
-  // Initialize Live Animated Gradient
-  useEffect(() => {
-    if (!canvasRef.current) return
-
-    let gradient: any = null
-    let active = true
-
-    import('@firecms/neat').then(({ NeatGradient }) => {
-      if (!active || !canvasRef.current) return
-
-      const config = {
-        colors: [
-          { color: '#167CB3', enabled: true },
-          { color: '#CB9854', enabled: true },
-          { color: '#CE96CE', enabled: true },
-          { color: '#E0115F', enabled: true },
-          { color: '#FFFFFF', enabled: false },
-          { color: '#000000', enabled: false },
-        ],
-        speed: 2.5,
-        horizontalPressure: 5,
-        verticalPressure: 5,
-        waveFrequencyX: 2,
-        waveFrequencyY: 3,
-        waveAmplitude: 6,
-        shadows: 2,
-        highlights: 0,
-        colorBrightness: 0.9,
-        colorSaturation: -3,
-        wireframe: false,
-        colorBlending: 5,
-        backgroundColor: '#A1A4B7',
-        backgroundAlpha: 1,
-        grainScale: 0,
-        grainSparsity: 0,
-        grainIntensity: 0,
-        grainSpeed: 0,
-        resolution: 0.4,
-        yOffset: 0.0999755859375,
-        yOffsetWaveMultiplier: 1,
-        yOffsetColorMultiplier: 4.8,
-        yOffsetFlowMultiplier: 5.3,
-        flowDistortionA: 3.7,
-        flowDistortionB: 0.8,
-        flowScale: 1.6,
-        flowEase: 0.32,
-        flowEnabled: true,
-        enableProceduralTexture: false,
-        transparentTextureVoid: true,
-        textureVoidLikelihood: 0.29,
-        textureVoidWidthMin: 120,
-        textureVoidWidthMax: 420,
-        textureBandDensity: 2.9,
-        textureColorBlending: 0.06,
-        textureSeed: 536,
-        textureEase: 0.93,
-        proceduralBackgroundColor: '#775454',
-        textureShapeTriangles: 48,
-        textureShapeCircles: 15,
-        textureShapeBars: 15,
-        textureShapeSquiggles: 27,
-        domainWarpEnabled: true,
-        domainWarpIntensity: 0.1,
-        domainWarpScale: 2.4,
-        vignetteIntensity: 0.45,
-        vignetteRadius: 0.55,
-        fresnelEnabled: false,
-        fresnelPower: 2.7,
-        fresnelIntensity: 1.3,
-        fresnelColor: '#F7E7CE',
-        iridescenceEnabled: false,
-        iridescenceIntensity: 0.5,
-        iridescenceSpeed: 1,
-        bloomIntensity: 1.9,
-        bloomThreshold: 0.6,
-        chromaticAberration: 17,
-        shapeType: 'ribbon' as const,
-        shapeRotationX: 0.3480000000000001,
-        shapeRotationY: -26.783,
-        shapeRotationZ: -0.29,
-        shapeAutoRotateSpeedX: 0,
-        shapeAutoRotateSpeedY: 0,
-        sphereRadius: 15,
-        torusRadius: 15,
-        torusTube: 5,
-        cylinderRadius: 10,
-        cylinderHeight: 40,
-        planeBend: 2.3,
-        planeTwist: -2.9,
-        silhouetteFade: 0.83,
-        cylinderFade: 0.08,
-        ribbonFade: 0.31,
-        flatShading: false,
-        cameraLock: false,
-        cameraX: 0,
-        cameraY: 0,
-        cameraZ: 0,
-        cameraRotationX: -0.014,
-        cameraRotationY: -0.23800000000000002,
-        cameraRotationZ: 0,
-        cameraZoom: 1,
-      }
-
-      gradient = new NeatGradient({
-        ref: canvasRef.current,
-        ...config
-      })
-
-      const handleScroll = () => {
-        if (gradient) {
-          gradient.yOffset = window.scrollY
-        }
-      }
-
-      window.addEventListener("scroll", handleScroll)
-    })
-
-    return () => {
-      active = false
-      if (gradient && typeof gradient.destroy === 'function') {
-        gradient.destroy()
-      }
-    }
-  }, [])
-
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim() || !description.trim()) return
@@ -484,7 +364,10 @@ export default function DashboardContent() {
           name,
           description,
           template: template?.name || 'Blank',
-          files: template?.files || {}
+          files: template?.files || {},
+          workspace_type: workspaceType,
+          byok_provider: workspaceType === 'byok' ? byokProvider : null,
+          byok_api_key: workspaceType === 'byok' ? byokApiKey : null,
         })
       })
 
@@ -492,6 +375,8 @@ export default function DashboardContent() {
       setName('')
       setDescription('')
       setSelectedTemplate('blank')
+      setWorkspaceType('standard')
+      setByokApiKey('')
       
       router.push(`/projects/${project.id}`)
     } catch (err: any) {
@@ -590,11 +475,16 @@ export default function DashboardContent() {
       {/* 2. Main Content Area (Island Card Wrapper) */}
       <div className="flex-1 flex flex-col h-[calc(100vh-16px)] m-2 rounded-2xl border border-neutral-900/60 bg-neutral-950/20 backdrop-blur-[2px] relative overflow-hidden z-10">
         
-        {/* Live Neat Animated Gradient Background (Contained and clipped inside the island card) */}
-        <div className="absolute inset-0 pointer-events-none z-0">
-          <canvas 
-            ref={canvasRef} 
-            className="w-full h-full opacity-100"
+        {/* Hero Video Background (matches landing page) */}
+        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden bg-black">
+          <video
+            ref={videoRef}
+            src="/Hero.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover opacity-60"
           />
         </div>
 
@@ -611,6 +501,13 @@ export default function DashboardContent() {
             <PanelLeftClose className={`w-[16px] h-[16px] transition-transform duration-300 ${!isSidebarOpen ? 'rotate-180' : ''}`} strokeWidth={1.5} />
           </button>
           <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="px-3.5 py-1.5 bg-white hover:bg-neutral-200 active:scale-95 text-black font-bold rounded-xl text-xs transition-all flex items-center space-x-1.5 cursor-pointer shadow-md"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>New Project</span>
+            </button>
           </div>
         </header>
 
@@ -914,6 +811,90 @@ export default function DashboardContent() {
                 />
               </div>
 
+               {/* Workspace Type */}
+              <div className="space-y-2">
+                <label className="block text-[10px] font-bold text-neutral-450 uppercase tracking-wider">
+                  Workspace Type
+                </label>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Standard */}
+                  <button
+                    type="button"
+                    onClick={() => setWorkspaceType('standard')}
+                    className={`p-3 rounded-xl border text-left transition-all ${
+                      workspaceType === 'standard'
+                        ? 'border-white/30 bg-white/[0.06]'
+                        : 'border-white/[0.04] bg-white/[0.01] hover:bg-white/[0.03]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-white mb-0.5">
+                      <Zap className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500/20" strokeWidth={2.5} />
+                      <span>Standard</span>
+                    </div>
+                    <div className="text-[9px] text-neutral-500">Uses Promptex credits</div>
+                  </button>
+
+                  {/* BYOK */}
+                  <button
+                    type="button"
+                    onClick={() => setWorkspaceType('byok')}
+                    className={`p-3 rounded-xl border text-left transition-all ${
+                      workspaceType === 'byok'
+                        ? 'border-purple-500/50 bg-purple-500/[0.06]'
+                        : 'border-white/[0.04] bg-white/[0.01] hover:bg-white/[0.03]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-white mb-0.5">
+                      <Key className="w-3.5 h-3.5 text-purple-450" strokeWidth={2.5} />
+                      <span>BYOK</span>
+                    </div>
+                    <div className="text-[9px] text-neutral-500">Use your own API key — Free</div>
+                  </button>
+                </div>
+              </div>
+
+              {/* BYOK Config — show only when BYOK selected */}
+              {workspaceType === 'byok' && (
+                <div className="space-y-3 p-3.5 bg-purple-950/20 border border-purple-900/30 rounded-xl">
+                  <p className="text-[10px] text-purple-300 font-medium flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                    <span>Your API key is encrypted and never stored in plain text.</span>
+                  </p>
+
+                  {/* Provider Select */}
+                  <div className="space-y-1">
+                    <label className="block text-[9px] font-bold text-neutral-400 uppercase tracking-wider">Provider</label>
+                    <select
+                      value={byokProvider}
+                      onChange={(e) => setByokProvider(e.target.value)}
+                      className="w-full bg-black border border-neutral-900 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-neutral-750"
+                    >
+                      <option value="openrouter">OpenRouter (Recommended)</option>
+                      <option value="groq">Groq</option>
+                      <option value="openai">OpenAI</option>
+                    </select>
+                  </div>
+
+                  {/* API Key Input */}
+                  <div className="space-y-1">
+                    <label className="block text-[9px] font-bold text-neutral-400 uppercase tracking-wider">API Key</label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="sk-or-v1-... or gsk_... or sk-..."
+                      value={byokApiKey}
+                      onChange={(e) => setByokApiKey(e.target.value)}
+                      className="w-full bg-black border border-neutral-900 rounded-xl px-3 py-2 text-xs text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-750"
+                    />
+                  </div>
+
+                  <p className="text-[9px] text-neutral-555 leading-normal">
+                    OpenRouter free tier works great. Get a key at openrouter.ai
+                  </p>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <label className="block text-[10px] font-bold text-neutral-450 uppercase tracking-wider">
                   Choose a Starter Template
@@ -930,7 +911,15 @@ export default function DashboardContent() {
                       }`}
                     >
                       <div className="flex justify-between items-start">
-                        <span className="text-base">{tpl.icon}</span>
+                        <span>
+                          {tpl.id === 'blank' ? (
+                            <FileText className="w-4 h-4 text-neutral-450" />
+                          ) : tpl.id === 'popup' ? (
+                            <Code className="w-4 h-4 text-purple-400" strokeWidth={2.5} />
+                          ) : (
+                            <Settings className="w-4 h-4 text-blue-400" />
+                          )}
+                        </span>
                         <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
                           selectedTemplate === tpl.id ? 'border-white bg-white' : 'border-neutral-850'
                         }`}>

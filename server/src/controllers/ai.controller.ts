@@ -1,5 +1,7 @@
 import { Response } from 'express'
 import { generateExtension } from '../services/openrouter.service'
+import { generateWithBYOK } from '../services/byok.service'
+import { encryptKey, decryptKey } from '../utils/encryption'
 import { db } from '../config/db'
 import { AuthenticatedRequest } from '../middleware/auth.middleware'
 
@@ -15,40 +17,65 @@ export async function handleGenerate(req: AuthenticatedRequest, res: Response) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
+  let isBYOK = false
+  let byokApiKey: string | null = null
+  let byokProvider = 'openrouter'
+
   try {
-    // 1. Ensure user record exists with 10 free credits initially
-    await db.query(
-      `INSERT INTO users (id, email, password_hash, plan, total_credits, used_credits)
-       VALUES ($1, '', '', 'free', 10, 0)
-       ON CONFLICT (id) DO UPDATE SET
-         total_credits = CASE 
-           WHEN users.total_credits = 0 THEN 10 
-           ELSE users.total_credits 
-         END`,
-      [userId]
+    // 1. Check if this is a BYOK project
+    const projectMeta = await db.query(
+      'SELECT workspace_type, byok_api_key, byok_provider FROM projects WHERE id = $1 AND user_id = $2',
+      [projectId, userId]
     )
 
-    // 2. Credits check - pure DB based
-    const userResult = await db.query(
-      'SELECT total_credits, used_credits FROM users WHERE id = $1',
-      [userId]
-    )
-    const total = userResult.rows[0]?.total_credits ?? 10
-    const used = userResult.rows[0]?.used_credits ?? 0
-    const remaining = total - used
+    if (projectMeta.rows.length === 0) {
+      return res.status(404).json({ error: 'Project not found or unauthorized' })
+    }
 
-    console.log(`[Credits] user=${userId} used=${used} total=${total} remaining=${remaining}`)
+    isBYOK = projectMeta.rows[0]?.workspace_type === 'byok'
+    byokApiKey = projectMeta.rows[0]?.byok_api_key || null
+    byokProvider = projectMeta.rows[0]?.byok_provider || 'openrouter'
 
-    if (remaining <= 0) {
-      return res.status(403).json({ 
-        error: 'Daily build credits limit reached. Please upgrade your plan.',
-        remaining: 0,
-        total
-      })
+    if (isBYOK) {
+      // BYOK workspace — no credit check, just validate key exists
+      console.log(`[BYOK] user=${userId} project=${projectId} provider=${byokProvider}`)
+      if (!byokApiKey) {
+        return res.status(400).json({ error: 'No API key configured for this BYOK workspace.' })
+      }
+    } else {
+      // Standard workspace — ensure user record exists and check credits
+      await db.query(
+        `INSERT INTO users (id, email, password_hash, plan, total_credits, used_credits)
+         VALUES ($1, '', '', 'free', 10, 0)
+         ON CONFLICT (id) DO UPDATE SET
+           total_credits = CASE 
+             WHEN users.total_credits = 0 THEN 10 
+             ELSE users.total_credits 
+           END`,
+        [userId]
+      )
+
+      const userResult = await db.query(
+        'SELECT total_credits, used_credits FROM users WHERE id = $1',
+        [userId]
+      )
+      const total = userResult.rows[0]?.total_credits ?? 10
+      const used = userResult.rows[0]?.used_credits ?? 0
+      const remaining = total - used
+
+      console.log(`[Credits] user=${userId} used=${used} total=${total} remaining=${remaining}`)
+
+      if (remaining <= 0) {
+        return res.status(403).json({
+          error: 'Daily build credits limit reached. Please upgrade your plan.',
+          remaining: 0,
+          total
+        })
+      }
     }
   } catch (err: any) {
-    console.error('[Credits] Check failed — blocking request:', err.message)
-    return res.status(500).json({ error: 'Credit check failed. Please try again.' })
+    console.error('[Pre-check] Failed:', err.message)
+    return res.status(500).json({ error: 'Pre-generation check failed. Please try again.' })
   }
 
   // Set up Server-Sent Events (SSE) headers
@@ -61,16 +88,11 @@ export async function handleGenerate(req: AuthenticatedRequest, res: Response) {
   let generatedFiles: Record<string, string> = {}
 
   try {
-    // 1. Verify project ownership
-    const projectCheck = await db.query(
+    // 1. Verify project ownership (already checked above, but also update status)
+    await db.query(
       'SELECT id FROM projects WHERE id = $1 AND user_id = $2',
       [projectId, userId]
     )
-    if (projectCheck.rows.length === 0) {
-      res.write(`data: ${JSON.stringify({ type: 'error', message: 'Project not found or unauthorized' })}\n\n`)
-      res.end()
-      return
-    }
 
     // 2. Save the user's message in the database
     await db.query(
@@ -78,30 +100,44 @@ export async function handleGenerate(req: AuthenticatedRequest, res: Response) {
       [projectId, 'user', prompt]
     )
 
-    // 3. Update project status in DB to 'generating'
+    // 3. Update project status to 'generating'
     await db.query(
       'UPDATE projects SET status = $1, updated_at = NOW() WHERE id = $2',
       ['generating', projectId]
     )
 
-    // 3. Call the Groq service
-    const result = await generateExtension(
-      prompt,
-      files,
-      history,
-      (event) => {
-        res.write(`data: ${JSON.stringify(event)}\n\n`)
+    // 4. Call the appropriate AI service
+    let result: { files: Record<string, string> }
 
-        if (event.type === 'text') {
-          accumulatedText += event.delta
+    if (isBYOK && byokApiKey) {
+      const decryptedKey = decryptKey(byokApiKey)
+      result = await generateWithBYOK(
+        prompt,
+        files,
+        history,
+        decryptedKey,
+        byokProvider,
+        (event) => {
+          res.write(`data: ${JSON.stringify(event)}\n\n`)
+          if (event.type === 'text') accumulatedText += event.delta
         }
-      }
-    )
+      )
+    } else {
+      result = await generateExtension(
+        prompt,
+        files,
+        history,
+        (event) => {
+          res.write(`data: ${JSON.stringify(event)}\n\n`)
+          if (event.type === 'text') accumulatedText += event.delta
+        }
+      )
+    }
 
     generatedFiles = result.files
     const finalFilesState = { ...files, ...generatedFiles }
 
-    // 4. Save/Upsert the modified files in the database
+    // 5. Save/Upsert the modified files in the database
     for (const [path, content] of Object.entries(generatedFiles)) {
       await db.query(
         `INSERT INTO files (project_id, path, content, updated_at)
@@ -112,43 +148,43 @@ export async function handleGenerate(req: AuthenticatedRequest, res: Response) {
       )
     }
 
-    // 5. Save the generation snapshot
+    // 6. Save the generation snapshot
     await db.query(
       'INSERT INTO generations (project_id, prompt, files_snapshot) VALUES ($1, $2, $3)',
       [projectId, prompt, JSON.stringify(finalFilesState)]
     )
 
-    // 6. Save the assistant's message in the database
+    // 7. Save the assistant's message
     await db.query(
       'INSERT INTO messages (project_id, role, content) VALUES ($1, $2, $3)',
       [projectId, 'assistant', accumulatedText || 'I have generated the requested changes.']
     )
 
-    // 7. Reset project status back to 'idle'
+    // 8. Reset project status back to 'idle'
     await db.query(
       'UPDATE projects SET status = $1, updated_at = NOW() WHERE id = $2',
       ['idle', projectId]
     )
 
-    // 8. Deduct one credit from user
-    await db.query(
-      'UPDATE users SET used_credits = used_credits + 1 WHERE id = $1',
-      [userId]
-    )
+    // 9. Deduct one credit — only for standard workspace
+    if (!isBYOK) {
+      await db.query(
+        'UPDATE users SET used_credits = used_credits + 1 WHERE id = $1',
+        [userId]
+      )
+    }
 
-    // 9. Send final completion event
+    // 10. Send final completion event
     res.write(`data: ${JSON.stringify({ type: 'done', files: finalFilesState })}\n\n`)
     res.end()
   } catch (error: any) {
     console.error('Error in handleGenerate:', error)
-    
-    // Update project status to 'failed'
+
     await db.query(
       'UPDATE projects SET status = $1, updated_at = NOW() WHERE id = $2',
       ['failed', projectId]
     )
 
-    // Send error event
     res.write(`data: ${JSON.stringify({ type: 'error', message: error.message || 'Generation failed' })}\n\n`)
     res.end()
   }

@@ -73,9 +73,12 @@ const mockBottomItems: NavItemData[] = [
 ];
 function WorkspaceSwitcher({ selected, onSelect, userEmail }: { selected?: string, onSelect?: (ws: string) => void, userEmail?: string }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [internalSelected, setInternalSelected] = useState("Urvaksh's Promptex");
+
+  // Derive display name from email (e.g. "john.doe@gmail.com" → "john.doe")
+  const derivedName = userEmail ? userEmail.split('@')[0] : 'My Workspace';
+  const [internalSelected, setInternalSelected] = useState('');
   
-  const current = selected || internalSelected;
+  const current = selected || internalSelected || derivedName;
   const handleSelect = onSelect || setInternalSelected;
   const initial = current.charAt(0).toUpperCase();
 

@@ -1067,21 +1067,28 @@ export default function EditorPage() {
           <div className="h-4 w-[1px] bg-neutral-850" />
           <div>
             <h1 className="font-bold text-sm text-white">{project?.name}</h1>
-            <div className="flex items-center space-x-1.5 mt-0.5">
-              <span className={`w-1.5 h-1.5 rounded-full ${
-                status === 'generating' 
-                  ? 'bg-purple-400 animate-pulse' 
-                  : status === 'previewing'
-                  ? 'bg-indigo-400 animate-pulse'
-                  : 'bg-emerald-400'
-              }`} />
-              <span className="text-[10px] text-neutral-500 font-medium uppercase tracking-wider">
-                {status === 'generating' 
-                  ? 'Generating...' 
-                  : status === 'previewing'
-                  ? 'Previewing...'
-                  : 'Ready'}
-              </span>
+            <div className="flex items-center space-x-2.5 mt-0.5">
+              <div className="flex items-center space-x-1.5">
+                <span className={`w-1.5 h-1.5 rounded-full ${
+                  status === 'generating' 
+                    ? 'bg-purple-400 animate-pulse' 
+                    : status === 'previewing'
+                    ? 'bg-indigo-400 animate-pulse'
+                    : 'bg-emerald-400'
+                }`} />
+                <span className="text-[10px] text-neutral-500 font-medium uppercase tracking-wider">
+                  {status === 'generating' 
+                    ? 'Generating...' 
+                    : status === 'previewing'
+                    ? 'Previewing...'
+                    : 'Ready'}
+                </span>
+              </div>
+              {project?.workspace_type === 'byok' && (
+                <span className="px-2 py-0.5 bg-purple-500/10 border border-purple-500/20 rounded-full text-[9px] font-bold text-purple-400 uppercase tracking-wider leading-none">
+                  BYOK
+                </span>
+              )}
             </div>
           </div>
         </div>

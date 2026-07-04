@@ -11,6 +11,37 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        border: "rgba(255, 255, 255, 0.1)",
+        input: "rgba(255, 255, 255, 0.1)",
+        ring: "rgba(255, 255, 255, 0.2)",
+        primary: {
+          DEFAULT: "var(--primary)",
+          foreground: "var(--background)",
+        },
+        secondary: {
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--foreground)",
+        },
+        destructive: {
+          DEFAULT: "var(--destructive)",
+          foreground: "var(--foreground)",
+        },
+        muted: {
+          DEFAULT: "rgba(255, 255, 255, 0.4)",
+          foreground: "rgba(255, 255, 255, 0.6)",
+        },
+        accent: {
+          DEFAULT: "rgba(255, 255, 255, 0.05)",
+          foreground: "var(--foreground)",
+        },
+        popover: {
+          DEFAULT: "#0f0f11",
+          foreground: "var(--foreground)",
+        },
+        card: {
+          DEFAULT: "#0f0f11",
+          foreground: "var(--foreground)",
+        },
         neutral: {
           955: "#080808",
           850: "#1f1f1f",
@@ -52,6 +83,8 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require("@tailwindcss/container-queries"),
+  ],
 };
 export default config;

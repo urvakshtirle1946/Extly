@@ -46,9 +46,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/signup')
   }
 
-  // logout: use Clerk signOut
+  // logout: navigate immediately, then clear Clerk session in background
   const logout = () => {
-    signOut(() => router.push('/'))
+    router.push('/')
+    signOut() // fire-and-forget — Clerk will update auth state async
   }
 
   return (
