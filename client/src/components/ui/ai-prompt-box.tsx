@@ -40,6 +40,61 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
     }
   };
 
+  const [isListening, setIsListening] = React.useState(false);
+  const recognitionRef = React.useRef<any>(null);
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const SpeechRecognition =
+        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = "en-US";
+
+        recognition.onstart = () => {
+          setIsListening(true);
+        };
+
+        recognition.onend = () => {
+          setIsListening(false);
+        };
+
+        recognition.onerror = (event: any) => {
+          console.error("Speech recognition error:", event.error);
+          setIsListening(false);
+        };
+
+        recognition.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript;
+          if (transcript) {
+            setInput((prev) => {
+              const trimmed = prev.trim();
+              return trimmed ? `${trimmed} ${transcript}` : transcript;
+            });
+          }
+        };
+
+        recognitionRef.current = recognition;
+      }
+    }
+  }, []);
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) {
+      alert("Speech recognition is not supported in this browser. Please try Google Chrome.");
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+    } else {
+      recognitionRef.current.start();
+    }
+  };
+
   return (
     <div
       ref={ref}
@@ -84,8 +139,14 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
           {/* Voice Input */}
           <button
             type="button"
-            className="p-1.5 text-neutral-500 hover:text-white transition-all cursor-pointer"
-            title="Use voice input"
+            onClick={toggleListening}
+            className={cn(
+              "p-1.5 transition-all cursor-pointer rounded-full",
+              isListening 
+                ? "text-red-500 bg-red-500/10 animate-pulse border border-red-500/20" 
+                : "text-neutral-500 hover:text-white"
+            )}
+            title={isListening ? "Listening... click to stop" : "Use voice input"}
           >
             <Mic className="h-4 w-4" />
           </button>

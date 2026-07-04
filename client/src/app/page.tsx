@@ -258,10 +258,10 @@ export default function RootPage() {
       <main className="min-h-screen flex flex-col items-center justify-center px-6 max-w-4xl w-full mx-auto relative z-10 pt-16 pb-20 select-none font-sans">
         <div className="text-center space-y-7 w-full my-auto">
           <div className="space-y-4">
-            <h1 className="text-4xl sm:text-[64px] font-serif-yc tracking-tight text-white leading-[1.1] font-normal">
-              Build extensions <span className="italic">with Promptex</span>
+            <h1 className="text-4xl sm:text-[64px] font-serif-yc tracking-tight leading-[1.1] font-normal" style={{ color: '#ffffff', filter: 'drop-shadow(0 2px 12px rgba(0,0,0,0.85)) drop-shadow(0 0 25px rgba(0,0,0,0.75))' }}>
+              Build extensions <span className="italic" style={{ color: '#000000' }}>with Promptex</span>
             </h1>
-            <p className="text-[17px] sm:text-[19px] text-slate-300 max-w-xl mx-auto font-medium leading-relaxed mt-3">
+            <p className="text-[17px] sm:text-[19px] max-w-xl mx-auto font-medium leading-relaxed mt-3" style={{ color: '#ffffff', opacity: 0.9, textShadow: '0 2px 12px rgba(0,0,0,0.85), 0 0 25px rgba(0,0,0,0.75)' }}>
               Create Chrome extensions by chatting with AI
             </p>
           </div>

@@ -226,6 +226,60 @@ export default function EditorPage() {
   const workspaceTextareaRef = useRef<HTMLTextAreaElement>(null)
 
   const [prompt, setPrompt] = useState('')
+  const [isListening, setIsListening] = useState(false)
+  const recognitionRef = useRef<any>(null)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const SpeechRecognition =
+        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition()
+        recognition.continuous = false
+        recognition.interimResults = false
+        recognition.lang = "en-US"
+
+        recognition.onstart = () => {
+          setIsListening(true)
+        }
+
+        recognition.onend = () => {
+          setIsListening(false)
+        }
+
+        recognition.onerror = (event: any) => {
+          console.error("Speech recognition error:", event.error)
+          setIsListening(false)
+        }
+
+        recognition.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript
+          if (transcript) {
+            setPrompt((prev) => {
+              const trimmed = prev.trim()
+              return trimmed ? `${trimmed} ${transcript}` : transcript
+            })
+          }
+        }
+
+        recognitionRef.current = recognition
+      }
+    }
+  }, [])
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) {
+      alert("Speech recognition is not supported in this browser. Please try Google Chrome.")
+      return
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop()
+    } else {
+      recognitionRef.current.start()
+    }
+  }
 
   useEffect(() => {
     const textarea = workspaceTextareaRef.current
@@ -1295,7 +1349,16 @@ export default function EditorPage() {
                 <div />
                 {/* Right Side: Microphone and Send Button */}
                 <div className="flex items-center space-x-2">
-                  <button type="button" className="p-1 hover:bg-neutral-900 rounded text-neutral-455 hover:text-white transition-all">
+                  <button
+                    type="button"
+                    onClick={toggleListening}
+                    className={`p-1 hover:bg-neutral-900 rounded transition-all ${
+                      isListening
+                        ? 'text-red-500 bg-red-500/10 animate-pulse border border-red-500/20'
+                        : 'text-neutral-455 hover:text-white'
+                    }`}
+                    title={isListening ? "Listening... click to stop" : "Use voice input"}
+                  >
                     <Mic className="w-3.5 h-3.5" />
                   </button>
                   {status === 'generating' ? (

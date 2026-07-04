@@ -18,6 +18,10 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "Promptex - Build Chrome Extensions with AI Chat",
   description: "Describe your browser extension in natural language. Watch the AI generate files, test in a live preview environment, self-heal, and download a working Manifest V3 zip.",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/promptex.png",
+  },
 };
 
 export default function RootLayout({
@@ -29,6 +33,9 @@ export default function RootLayout({
     <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_c2VsZWN0LWdyb3VzZS02My5jbGVyay5hY2NvdW50cy5kZXYk'}>
       <html lang="en">
         <head>
+          <link rel="icon" href="/favicon.ico" sizes="any" />
+          <link rel="icon" href="/promptex.png" type="image/png" />
+          <link rel="apple-touch-icon" href="/promptex.png" />
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap" rel="stylesheet" />
