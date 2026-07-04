@@ -233,125 +233,61 @@ export default function RootPage() {
       </main>
 
       {/* How it Works Section */}
-      <section id="how-it-works" className="relative z-10 py-24 px-6 max-w-5xl w-full mx-auto select-none font-sans relative">
-        <div className="text-center space-y-4 mb-20">
-          <div className="inline-block px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-neutral-400 text-[10px] font-bold uppercase tracking-widest mb-2">
-            Workflow
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-serif-yc text-white tracking-tight font-normal">
-            How Promptex <span className="italic">Works</span>
-          </h2>
-          <p className="text-[15px] text-neutral-450 max-w-md mx-auto">
-            From idea to Chrome Extension in 3 simple steps
-          </p>
+      <section id="how-it-works" className="relative z-10 py-24 px-6 max-w-5xl w-full mx-auto select-none font-sans">
+        {/* Top badge */}
+        <div className="flex justify-center mb-6">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-medium tracking-wider uppercase bg-[#0c0c0d] border border-white/[0.08] text-neutral-400 rounded-full">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
+            How it works
+          </span>
         </div>
 
-        {/* Decorative connection line for desktop */}
-        <div className="hidden lg:block absolute left-1/2 top-48 bottom-32 w-px bg-gradient-to-b from-purple-500/20 via-cyan-500/20 to-transparent -translate-x-1/2 -z-10" />
+        {/* Main heading */}
+        <h2 className="text-3xl sm:text-[44px] font-extrabold text-white tracking-tight leading-[1.15] text-center max-w-2xl mx-auto mb-16">
+          Three steps to your extension.<br />
+          <span className="text-neutral-450 font-bold">One ZIP to install everywhere.</span>
+        </h2>
 
-        <div className="space-y-24">
-          {/* Step 1: Draft your prompt */}
-          <div className="flex flex-col lg:flex-row items-center gap-12">
-            <div className="flex-1 order-2 lg:order-1">
-              <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] hover:border-white/[0.18] p-8 rounded-3xl transition-all duration-300 shadow-2xl hover:-translate-y-1">
-                <div className="flex items-center gap-4 mb-4">
-                  <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">01</span>
-                  <h3 className="text-xl font-bold text-white">Draft your prompt</h3>
-                </div>
-                <p className="text-xs text-neutral-400 leading-relaxed mb-6">
-                  Describe your browser extension in plain English. Prompt for custom UI popups, options pages, background scripts, or DOM content injects.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/25 text-cyan-400 text-[10px] font-bold tracking-wider uppercase">Variables</span>
-                  <span className="px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/25 text-purple-400 text-[10px] font-bold tracking-wider uppercase">MV3 Ready</span>
-                </div>
-              </div>
+        {/* 3-Column Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 max-w-4xl mx-auto text-center">
+          {/* Step 1 */}
+          <div className="space-y-4">
+            <div className="mx-auto w-12 h-12 border border-white/[0.15] rounded-xl flex items-center justify-center text-neutral-400 bg-white/[0.01]">
+              <Code className="w-5 h-5" />
             </div>
-            <div className="flex-1 order-1 lg:order-2 w-full">
-              <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 to-transparent opacity-30 blur-2xl group-hover:opacity-50 transition-opacity duration-500" />
-                <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] shadow-2xl bg-neutral-950 aspect-[1.79]">
-                  <Image 
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKqnjcqQPRoaYvFZmiLaDHoxa2inrVnXiB4xaUBjN_G38Hs2tbfdVWeO_N6an77yWs0xXTUi3K4uRO-fqYc_IdqR4bIthXki0bHyEWPjYqRAil-hJfnhxOM3KdiNp_vTgC5jk9VV-Y3OSNYAeIs1mVprKdj8FIrsPwbzj6R2BAsg8ykiyAePtS8vzNcc8ivy1eGkRMJOmvApLcdlW7fWyEHHkJE4rc0bMVnJumoC4vc0zB_gn-bdY3JWtMuaKtUmHPtDXk5hn8ZOLf" 
-                    alt="Draft your prompt illustration" 
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    className="object-cover transform transition-transform duration-700 group-hover:scale-103"
-                  />
-                </div>
-              </div>
-            </div>
+            <h3 className="text-sm font-bold text-white">Draft prompt</h3>
+            <p className="text-xs text-neutral-400 leading-relaxed max-w-[240px] mx-auto">
+              Describe your browser extension in plain English.
+            </p>
           </div>
 
-          {/* Step 2: Live AI generation */}
-          <div className="flex flex-col lg:flex-row items-center gap-12">
-            <div className="flex-1 w-full">
-              <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/20 to-transparent opacity-30 blur-2xl group-hover:opacity-50 transition-opacity duration-500" />
-                <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] shadow-2xl bg-neutral-950 aspect-[1.79]">
-                  <Image 
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaKBJPiQhOHF4_7nW5rmBST97UefPUlm1tb_uPflVoUz68NGlk-gih1TtxWVoqGO_UZjl6rThLVmWR862XKizk7SMsueoGrNDsugeS_5_77KfXZZvaPoIh7NSiab7HAMB3Pr0VvvmiadkZ83VqARGwphDrW52F9ZLnEke2mdDuPNI5CClnN483bjHKJi2xtGzAlOsu0z-qU43PfIHMgB3bogDBZeM1ckjTP9G2yZhvEhH6c_vItRuKNTjcn_d_x5ZDwcn89CDZQ7of" 
-                    alt="Live AI generation illustration" 
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    className="object-cover transform transition-transform duration-700 group-hover:scale-103"
-                  />
-                </div>
-              </div>
+          {/* Step 2 */}
+          <div className="space-y-4">
+            <div className="mx-auto w-12 h-12 border border-white/[0.15] rounded-xl flex items-center justify-center text-neutral-400 bg-white/[0.01]">
+              <Terminal className="w-5 h-5" />
             </div>
-            <div className="flex-1">
-              <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] hover:border-white/[0.18] p-8 rounded-3xl transition-all duration-300 shadow-2xl hover:-translate-y-1">
-                <div className="flex items-center gap-4 mb-4">
-                  <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">02</span>
-                  <h3 className="text-xl font-bold text-white">Live AI generation</h3>
-                </div>
-                <p className="text-xs text-neutral-400 leading-relaxed">
-                  Watch Promptex write HTML, JavaScript, CSS, and manifest files, resolve API connections, design layouts, and automatically resolve bugs.
-                </p>
-                <div className="bg-[#0b0b0c]/80 p-4 rounded-2xl border border-white/[0.06] mt-6 font-mono text-[11px]">
-                  <div className="flex items-center gap-2 text-cyan-400 mb-2">
-                    <Terminal className="w-3.5 h-3.5 animate-pulse" />
-                    <span>Generating manifest.json...</span>
-                  </div>
-                  <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-cyan-400 w-2/3 animate-[pulse_2s_infinite]"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <h3 className="text-sm font-bold text-white">Live AI generation</h3>
+            <p className="text-xs text-neutral-400 leading-relaxed max-w-[240px] mx-auto">
+              Watch the AI write manifest, assets, and JS files live.
+            </p>
           </div>
 
-          {/* Step 3: Export MV3 Extension */}
-          <div className="flex flex-col lg:flex-row items-center gap-12">
-            <div className="flex-1 order-2 lg:order-1">
-              <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] hover:border-white/[0.18] p-8 rounded-3xl transition-all duration-300 shadow-2xl hover:-translate-y-1">
-                <div className="flex items-center gap-4 mb-4">
-                  <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">03</span>
-                  <h3 className="text-xl font-bold text-white">Export MV3 Extension</h3>
-                </div>
-                <p className="text-xs text-neutral-400 leading-relaxed">
-                  Test your extension inside a live sandboxed browser environment, inspect file code, debug, and download a production ZIP in one click.
-                </p>
-                <button className="w-full py-3 mt-6 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl flex items-center justify-center gap-2 transition-all duration-200 text-xs font-semibold text-neutral-300 active:scale-98">
-                  <Download className="w-4 h-4 text-cyan-400" />
-                  <span>PREVIEW BUILD</span>
-                </button>
-              </div>
+          {/* Step 3 */}
+          <div className="space-y-4">
+            <div className="mx-auto w-12 h-12 border border-white/[0.15] rounded-xl flex items-center justify-center text-neutral-400 bg-white/[0.01]">
+              <Download className="w-5 h-5" />
             </div>
-            <div className="flex-1 order-1 lg:order-2 w-full">
-              <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 via-cyan-500/20 to-transparent opacity-30 blur-2xl group-hover:opacity-50 transition-opacity duration-500" />
-                <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] shadow-2xl bg-neutral-950 aspect-[1.79]">
-                  <Image 
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuADgI_n5SoE-wBUP-BSiPl6H56NngvaPY3x41xZPVpPHvYuv1ff1r1EBGH-BA7nO2w6wBf580jB8Dao3PQeU3h6JTjNe6v2ctw8dLoXRmAnZNVduWP5ZwRrz2Zi-Rd79A9wOLymDexkWZl6nlSUfydZBia6ffd4b9WZAtJW1KdxeVmB7pFqWqo2QcMsxUp-eyj3A3DkSJVLY_vf8_EEEjT4hVb93hVdXrmN0iWbrBao16CADaUZ3RkcEheo1nz6OAF-IBAhK07i3cmy" 
-                    alt="Export MV3 Extension illustration" 
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    className="object-cover transform transition-transform duration-700 group-hover:scale-103"
-                  />
-                </div>
-              </div>
-            </div>
+            <h3 className="text-sm font-bold text-white">Export extension</h3>
+            <p className="text-xs text-neutral-400 leading-relaxed max-w-[240px] mx-auto">
+              Download your extension ZIP in one click.
+            </p>
+          </div>
+        </div>
+
+        {/* Bottom capsule */}
+        <div className="mt-16 flex justify-center">
+          <div className="px-6 py-2.5 bg-white/[0.02] border border-white/[0.08] hover:border-white/[0.12] rounded-full text-[11px] text-neutral-400 transition-all cursor-pointer">
+            From a simple prompt to your <span className="font-bold text-white">working extension</span>
           </div>
         </div>
       </section>
