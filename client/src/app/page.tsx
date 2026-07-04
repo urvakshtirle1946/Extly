@@ -123,9 +123,27 @@ export default function RootPage() {
     return <DashboardContent />
   }
 
+  const scrollToSection = (id: string) => (e: React.MouseEvent) => {
+    e.preventDefault()
+    const element = document.getElementById(id)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
+  const scrollToTop = (e: React.MouseEvent) => {
+    e.preventDefault()
+    const mainDiv = document.getElementById('main-container')
+    if (mainDiv) {
+      mainDiv.scrollTo({ top: 0, behavior: 'smooth' })
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
   // Unauthenticated → NEAT landing
   return (
-    <div className="min-h-screen text-white overflow-y-auto relative font-sans flex flex-col scroll-smooth">
+    <div id="main-container" className="min-h-screen text-white overflow-y-auto relative font-sans flex flex-col scroll-smooth">
 
       {/* Background Video */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-black">
@@ -137,15 +155,13 @@ export default function RootPage() {
           playsInline
           className="w-full h-full object-cover"
         />
-        {/* Dark overlay to make typography pop */}
-        <div className="absolute inset-0 bg-black/65 z-10" />
       </div>
 
       {/* Floating Header Pill */}
       <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none select-none">
         <header className="pointer-events-auto h-12 max-w-fit flex items-center justify-between gap-6 px-1.5 bg-black/60 backdrop-blur-xl border border-white/[0.08] rounded-full shadow-2xl">
           {/* Promptex Logo */}
-          <Link href="/" className="flex items-center justify-center hover:opacity-85 transition-opacity ml-3.5 pointer-events-auto shrink-0">
+          <Link href="/" onClick={scrollToTop} className="flex items-center justify-center hover:opacity-85 transition-opacity ml-3.5 pointer-events-auto shrink-0">
             <PromptexLogo height={20} />
           </Link>
 
@@ -153,18 +169,21 @@ export default function RootPage() {
           <nav className="flex items-center gap-6 px-3">
             <Link 
               href="/" 
+              onClick={scrollToTop}
               className="text-[12px] font-bold text-neutral-400 hover:text-white transition-colors"
             >
               Home
             </Link>
             <Link 
               href="#pricing" 
-              className="text-[12px] font-bold text-white transition-colors"
+              onClick={scrollToSection('pricing')}
+              className="text-[12px] font-bold text-neutral-400 hover:text-white transition-colors"
             >
               Pricing
             </Link>
             <Link 
               href="#faq" 
+              onClick={scrollToSection('faq')}
               className="text-[12px] font-bold text-neutral-400 hover:text-white transition-colors"
             >
               FAQ
