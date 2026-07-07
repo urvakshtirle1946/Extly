@@ -3,15 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 
 const images = [
-  "https://pbs.twimg.com/media/G6dpB9JaAAA2wDS?format=png&name=360x360",
-  "https://pbs.twimg.com/media/G6dpEiebIAEHrOS?format=jpg&name=360x360",
-  "https://pbs.twimg.com/media/G6dpGJZbsAEg1tp?format=png&name=360x360",
-  "https://pbs.twimg.com/media/G6dpHzVbkAERJI3?format=png&name=360x360",
-  "https://pbs.twimg.com/media/G6dpKpcbgAAj7ce?format=png&name=360x360",
-  "https://pbs.twimg.com/media/G6dpNYzawAAniIt?format=png&name=360x360",
-  "https://pbs.twimg.com/media/G6dpPilbcAAH3jU?format=jpg&name=360x360",
-  "https://pbs.twimg.com/media/G6dpRFBbsAEvquO?format=jpg&name=360x360",
-  "https://pbs.twimg.com/media/G6dpUL-aUAAUqGZ?format=png&name=small",
+  "/Screenshort/1.png",
+  "/Screenshort/2.png",
+  "/Screenshort/3.png",
+  "/Screenshort/4.png",
+  "/Screenshort/5.png",
 ];
 
 const ExpandOnHover = () => {
