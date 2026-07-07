@@ -4,6 +4,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { AuthProvider } from "@/context/AuthContext";
 import { Analytics } from "@vercel/analytics/next";
+import { PostHogProvider } from "@/providers/PostHogProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -46,7 +47,9 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950 text-slate-100`}
         >
           <AuthProvider>
-            {children}
+            <PostHogProvider>
+              {children}
+            </PostHogProvider>
           </AuthProvider>
           <Analytics />
         </body>
