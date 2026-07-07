@@ -205,14 +205,22 @@ export default function DashboardContent() {
   const router = useRouter()
   const { user, logout } = useAuth()
   const [projects, setProjects] = useState<Project[]>([])
+  const [userPlan, setUserPlan] = useState('free')
+
+  useEffect(() => {
+    async function getPlan() {
+      try {
+        const data = await apiFetch('/api/usage')
+        setUserPlan(data.plan || 'free')
+      } catch (err) {
+        console.error('Failed to load usage details:', err)
+      }
+    }
+    getPlan()
+  }, [])
+
   const [loading, setLoading] = useState(true)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  
-  // Background video ref (unused — video is self-contained)
   const videoRef = useRef<HTMLVideoElement>(null)
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [selectedTemplate, setSelectedTemplate] = useState('blank')
   const [creating, setCreating] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [error, setError] = useState('')
@@ -220,9 +228,6 @@ export default function DashboardContent() {
   // Quick Prompt Idea State
   const [quickPrompt, setQuickPrompt] = useState('')
   const [activeTab, setActiveTab] = useState<'projects' | 'recent' | 'gallery'>('projects')
-  const [workspaceType, setWorkspaceType] = useState<'standard' | 'byok'>('standard')
-  const [byokProvider, setByokProvider] = useState('openrouter')
-  const [byokApiKey, setByokApiKey] = useState('')
   
   // Sidebar Nav States
   const [sidebarActiveId, setSidebarActiveId] = useState('home')
@@ -294,16 +299,6 @@ export default function DashboardContent() {
           setSidebarActiveId('settings')
         }
       },
-      {
-        id: 'new-project',
-        label: 'New project',
-        group: 'Actions',
-        icon: Plus,
-        hint: '⌘ ⇧ N',
-        onSelect: () => {
-          setIsModalOpen(true)
-        }
-      }
     ]
 
     const projectItems = projects.map(p => ({
@@ -316,19 +311,7 @@ export default function DashboardContent() {
       }
     }))
 
-    const templateItems = TEMPLATES.map(t => ({
-      id: `template-${t.id}`,
-      label: `Create from Template: ${t.name}`,
-      group: 'Templates',
-      icon: Code,
-      hint: t.description,
-      onSelect: () => {
-        setSelectedTemplate(t.id)
-        setIsModalOpen(true)
-      }
-    }))
-
-    return [...baseItems, ...projectItems, ...templateItems]
+    return [...baseItems, ...projectItems]
   }, [projects, router])
 
   // Fetch projects on mount
@@ -349,44 +332,18 @@ export default function DashboardContent() {
     }
   }, [user])
 
-  const handleCreateProject = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!name.trim() || !description.trim()) return
-
-    setCreating(true)
-    setError('')
-
-    try {
-      const template = TEMPLATES.find(t => t.id === selectedTemplate)
-      const project = await apiFetch('/api/projects', {
-        method: 'POST',
-        body: JSON.stringify({
-          name,
-          description,
-          template: template?.name || 'Blank',
-          files: template?.files || {},
-          workspace_type: workspaceType,
-          byok_provider: workspaceType === 'byok' ? byokProvider : null,
-          byok_api_key: workspaceType === 'byok' ? byokApiKey : null,
-        })
-      })
-
-      setIsModalOpen(false)
-      setName('')
-      setDescription('')
-      setSelectedTemplate('blank')
-      setWorkspaceType('standard')
-      setByokApiKey('')
-      
-      router.push(`/projects/${project.id}`)
-    } catch (err: any) {
-      setError(err.message || 'Failed to create project')
-      setCreating(false)
-    }
-  }
-
-  const handleQuickCreateFromMessage = async (message: string) => {
+  const handleQuickCreateFromMessage = async (
+    message: string,
+    useByok: boolean = false,
+    byokProvider: string = 'openrouter',
+    byokApiKey: string = ''
+  ) => {
     if (!message.trim()) return
+
+    if (userPlan !== 'pro' && userPlan !== 'business' && projects.length >= 3) {
+      alert('Free tier limit reached: You can only create up to 3 projects. Please upgrade your plan in the Billing section to create more projects.')
+      return
+    }
 
     setCreating(true)
     setError('')
@@ -409,7 +366,10 @@ export default function DashboardContent() {
           name: generatedName,
           description: message,
           template: 'Blank',
-          files: {}
+          files: {},
+          workspace_type: useByok ? 'byok' : 'standard',
+          byok_provider: useByok ? byokProvider : null,
+          byok_api_key: useByok ? byokApiKey : null
         })
       })
 
@@ -501,13 +461,6 @@ export default function DashboardContent() {
             <PanelLeftClose className={`w-[16px] h-[16px] transition-transform duration-300 ${!isSidebarOpen ? 'rotate-180' : ''}`} strokeWidth={1.5} />
           </button>
           <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="px-3.5 py-1.5 bg-white hover:bg-neutral-200 active:scale-95 text-black font-bold rounded-xl text-xs transition-all flex items-center space-x-1.5 cursor-pointer shadow-md"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>New Project</span>
-            </button>
           </div>
         </header>
 
@@ -751,6 +704,7 @@ export default function DashboardContent() {
                   placeholder="Ask Promptex to create a prototype..."
                   isLoading={creating}
                   onSend={handleQuickCreateFromMessage}
+                  showByokToggle={true}
                 />
               </div>
             </div>
@@ -759,209 +713,6 @@ export default function DashboardContent() {
 
       </main>
     </div>
-
-      {/* 3. New Project Modal (Fallback/From Plus Template click) */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-neutral-950 border border-neutral-900 w-full max-w-lg rounded-2xl shadow-2xl relative overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 p-1.5 hover:bg-neutral-900 text-neutral-550 hover:text-white rounded-lg transition-all"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <form onSubmit={handleCreateProject} className="p-8 space-y-6">
-              <div>
-                <h3 className="text-base font-bold text-white">Create New Extension</h3>
-                <p className="text-neutral-550 text-xs mt-1">Scaffold your extension with a starter template</p>
-              </div>
-
-              {error && (
-                <div className="p-3 bg-red-955/20 border border-red-900/30 rounded-lg text-red-400 text-xs">
-                  {error}
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <label className="block text-[10px] font-bold text-neutral-450 uppercase tracking-wider">
-                  Extension Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g., Daily Quotes Tab"
-                  className="w-full px-4 py-2.5 bg-black border border-neutral-900 rounded-xl text-white placeholder-neutral-600 text-xs focus:border-neutral-700 focus:outline-none transition-all"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-[10px] font-bold text-neutral-450 uppercase tracking-wider">
-                  What should this extension do?
-                </label>
-                <textarea
-                  required
-                  rows={3}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Describe the extension in detail..."
-                  className="w-full px-4 py-2.5 bg-black border border-neutral-900 rounded-xl text-white placeholder-neutral-600 text-xs focus:border-neutral-700 focus:outline-none transition-all resize-none"
-                />
-              </div>
-
-               {/* Workspace Type */}
-              <div className="space-y-2">
-                <label className="block text-[10px] font-bold text-neutral-450 uppercase tracking-wider">
-                  Workspace Type
-                </label>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  {/* Standard */}
-                  <button
-                    type="button"
-                    onClick={() => setWorkspaceType('standard')}
-                    className={`p-3 rounded-xl border text-left transition-all ${
-                      workspaceType === 'standard'
-                        ? 'border-white/30 bg-white/[0.06]'
-                        : 'border-white/[0.04] bg-white/[0.01] hover:bg-white/[0.03]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-white mb-0.5">
-                      <Zap className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500/20" strokeWidth={2.5} />
-                      <span>Standard</span>
-                    </div>
-                    <div className="text-[9px] text-neutral-500">Uses Promptex credits</div>
-                  </button>
-
-                  {/* BYOK */}
-                  <button
-                    type="button"
-                    onClick={() => setWorkspaceType('byok')}
-                    className={`p-3 rounded-xl border text-left transition-all ${
-                      workspaceType === 'byok'
-                        ? 'border-purple-500/50 bg-purple-500/[0.06]'
-                        : 'border-white/[0.04] bg-white/[0.01] hover:bg-white/[0.03]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-white mb-0.5">
-                      <Key className="w-3.5 h-3.5 text-purple-450" strokeWidth={2.5} />
-                      <span>BYOK</span>
-                    </div>
-                    <div className="text-[9px] text-neutral-500">Use your own API key — Free</div>
-                  </button>
-                </div>
-              </div>
-
-              {/* BYOK Config — show only when BYOK selected */}
-              {workspaceType === 'byok' && (
-                <div className="space-y-3 p-3.5 bg-purple-950/20 border border-purple-900/30 rounded-xl">
-                  <p className="text-[10px] text-purple-300 font-medium flex items-center gap-1.5">
-                    <Lock className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                    <span>Your API key is encrypted and never stored in plain text.</span>
-                  </p>
-
-                  {/* Provider Select */}
-                  <div className="space-y-1">
-                    <label className="block text-[9px] font-bold text-neutral-400 uppercase tracking-wider">Provider</label>
-                    <select
-                      value={byokProvider}
-                      onChange={(e) => setByokProvider(e.target.value)}
-                      className="w-full bg-black border border-neutral-900 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-neutral-750"
-                    >
-                      <option value="openrouter">OpenRouter (Recommended)</option>
-                      <option value="groq">Groq</option>
-                      <option value="openai">OpenAI</option>
-                    </select>
-                  </div>
-
-                  {/* API Key Input */}
-                  <div className="space-y-1">
-                    <label className="block text-[9px] font-bold text-neutral-400 uppercase tracking-wider">API Key</label>
-                    <input
-                      type="password"
-                      required
-                      placeholder="sk-or-v1-... or gsk_... or sk-..."
-                      value={byokApiKey}
-                      onChange={(e) => setByokApiKey(e.target.value)}
-                      className="w-full bg-black border border-neutral-900 rounded-xl px-3 py-2 text-xs text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-750"
-                    />
-                  </div>
-
-                  <p className="text-[9px] text-neutral-555 leading-normal">
-                    OpenRouter free tier works great. Get a key at openrouter.ai
-                  </p>
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <label className="block text-[10px] font-bold text-neutral-450 uppercase tracking-wider">
-                  Choose a Starter Template
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  {TEMPLATES.map((tpl) => (
-                    <div
-                      key={tpl.id}
-                      onClick={() => setSelectedTemplate(tpl.id)}
-                      className={`p-3 rounded-xl border cursor-pointer text-left transition-all flex flex-col justify-between h-20 select-none ${
-                        selectedTemplate === tpl.id
-                          ? 'border-neutral-700 bg-neutral-900'
-                          : 'border-neutral-900 bg-black hover:border-neutral-800'
-                      }`}
-                    >
-                      <div className="flex justify-between items-start">
-                        <span>
-                          {tpl.id === 'blank' ? (
-                            <FileText className="w-4 h-4 text-neutral-450" />
-                          ) : tpl.id === 'popup' ? (
-                            <Code className="w-4 h-4 text-purple-400" strokeWidth={2.5} />
-                          ) : (
-                            <Settings className="w-4 h-4 text-blue-400" />
-                          )}
-                        </span>
-                        <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
-                          selectedTemplate === tpl.id ? 'border-white bg-white' : 'border-neutral-850'
-                        }`}>
-                          {selectedTemplate === tpl.id && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-[10px] text-white">{tpl.name}</h4>
-                        <p className="text-[9px] text-neutral-500 line-clamp-1 mt-0.5">{tpl.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex justify-end space-x-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-black hover:bg-neutral-900 border border-neutral-850 text-neutral-300 font-medium rounded-xl text-xs transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={creating}
-                  className="px-4 py-2 bg-white hover:bg-neutral-200 text-black font-semibold rounded-xl text-xs transition-all flex items-center space-x-2 disabled:opacity-70"
-                >
-                  {creating ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>Creating...</span>
-                    </>
-                  ) : (
-                    <span>Create Project</span>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       <CommandPalette
         open={isCommandPaletteOpen}

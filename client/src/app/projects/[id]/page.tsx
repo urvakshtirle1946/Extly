@@ -767,7 +767,7 @@ export default function EditorPage() {
               errMsg.toLowerCase().includes('403')
             
             const messageText = isCreditError
-              ? "⚠️ **Daily Build Credits Exhausted**\n\nYou have used your 5 free build credits for today. Please [upgrade your plan](/dashboard?tab=billing) to continue building and deploying extensions."
+              ? "⚠️ **Daily Build Credits Exhausted**\n\nYou have used your 10 free build credits. Please [upgrade your plan](/dashboard?tab=billing) to continue building and deploying extensions."
               : `❌ **Generation Failed**\n\nAn error occurred during response generation: \`${errMsg}\`. Please try again.`;
 
             setMessages((prev) =>
@@ -813,7 +813,7 @@ export default function EditorPage() {
       setStatus('failed')
       
       const errorMessage = isCreditError
-        ? "⚠️ **Daily Build Credits Exhausted**\n\nYou have used your 5 free build credits for today. Please [upgrade your plan](/dashboard?tab=billing) to continue building and deploying extensions."
+        ? "⚠️ **Daily Build Credits Exhausted**\n\nYou have used your 10 free build credits. Please [upgrade your plan](/dashboard?tab=billing) to continue building and deploying extensions."
         : `❌ **Failed:** ${errStr}`;
 
       setMessages((prev) =>
@@ -1656,7 +1656,7 @@ export default function EditorPage() {
             {/* Title & Description */}
             <h3 className="text-base font-bold text-white mb-2">Daily Credits Exhausted</h3>
             <p className="text-neutral-450 text-xs leading-relaxed mb-6">
-              You have completed all 5 of your free daily extension builds. Upgrade to the Pro plan for unlimited generations, advanced AI capabilities, and immediate previews.
+              You have completed all 10 of your free extension builds. Upgrade to the Pro plan for unlimited generations, advanced AI capabilities, and immediate previews.
             </p>
 
             {/* Actions */}

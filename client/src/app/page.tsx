@@ -13,6 +13,7 @@ import { PromptInputBox } from '@/components/ui/ai-prompt-box'
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { CinematicFooter } from '@/components/ui/motion-footer'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import ExpandOnHover from '@/components/ui/expand-cards'
 
 export default function RootPage() {
   const { user, loading } = useAuth()
@@ -21,33 +22,6 @@ export default function RootPage() {
   const [creatingProject, setCreatingProject] = useState(false)
   const [copiedEmail, setCopiedEmail] = useState(false)
   const [isYearly, setIsYearly] = useState(false)
-  const videoRef = useRef<HTMLVideoElement>(null)
-
-  useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          video.play().catch((err) => {
-            console.warn("Autoplay prevented:", err)
-          })
-        } else {
-          video.pause()
-        }
-      },
-      {
-        threshold: 0.2,
-      }
-    )
-
-    observer.observe(video)
-
-    return () => {
-      observer.unobserve(video)
-    }
-  }, [])
 
   const faqItems = [
     {
@@ -255,7 +229,7 @@ export default function RootPage() {
       </div>
 
       {/* Centered hero */}
-      <main className="min-h-screen flex flex-col items-center justify-center px-6 max-w-4xl w-full mx-auto relative z-10 pt-16 pb-20 select-none font-sans">
+      <main className="min-h-[80vh] flex flex-col items-center justify-center px-6 max-w-4xl w-full mx-auto relative z-10 pt-16 pb-12 select-none font-sans">
         <div className="text-center space-y-7 w-full my-auto">
           <div className="space-y-4">
             <h1 className="text-4xl sm:text-[64px] font-serif-yc tracking-tight leading-[1.1] font-normal" style={{ color: '#ffffff', filter: 'drop-shadow(0 2px 12px rgba(0,0,0,0.85)) drop-shadow(0 0 25px rgba(0,0,0,0.75))' }}>
@@ -273,21 +247,10 @@ export default function RootPage() {
             />
           </div>
         </div>
-
-        {/* Scroll Indicator */}
-        <div 
-          onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
-          className="absolute bottom-6 flex flex-col items-center gap-1 text-[10px] text-neutral-450 animate-bounce cursor-pointer font-bold uppercase tracking-widest select-none"
-        >
-          <span>Learn More</span>
-          <svg className="w-3.5 h-3.5 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
       </main>
 
       {/* How it Works Section */}
-      <section id="how-it-works" className="relative z-10 py-16 px-6 max-w-5xl w-full mx-auto select-none font-sans">
+      <section id="how-it-works" className="relative z-10 pt-6 pb-16 px-6 max-w-5xl w-full mx-auto select-none font-sans">
         {/* Badge */}
         <div className="flex justify-center mb-10">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-medium tracking-wider uppercase bg-[#0c0c0d] border border-white/[0.08] text-neutral-400 rounded-full">
@@ -300,17 +263,8 @@ export default function RootPage() {
         <div className="-mx-6 sm:-mx-12 lg:-mx-24 xl:-mx-40 relative">
           {/* Glow halo */}
           <div className="absolute inset-x-0 -top-8 h-32 bg-white/[0.03] blur-3xl rounded-full pointer-events-none" />
-          <div className="relative rounded-2xl overflow-hidden border border-white/[0.08] shadow-[0_0_80px_rgba(0,0,0,0.9)] ring-1 ring-white/[0.04]">
-            <video
-              ref={videoRef}
-              src="/platform.mp4"
-              loop
-              muted
-              playsInline
-              className="w-full h-auto block"
-            />
-            {/* Bottom fade */}
-            <div className="absolute bottom-0 inset-x-0 h-28 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
+          <div className="relative rounded-2xl overflow-hidden py-4">
+            <ExpandOnHover />
           </div>
         </div>
       </section>

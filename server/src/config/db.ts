@@ -74,7 +74,19 @@ CREATE TABLE IF NOT EXISTS messages (
   feedback VARCHAR(10) DEFAULT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 6. Processed Payments Table (Idempotency check for Razorpay)
+CREATE TABLE IF NOT EXISTS processed_payments (
+  order_id VARCHAR(255) PRIMARY KEY,
+  payment_id VARCHAR(255),
+  user_id VARCHAR(255) REFERENCES users(id) ON DELETE CASCADE,
+  amount NUMERIC,
+  credits INTEGER,
+  status VARCHAR(50),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
 `
+
 
 export async function initDb() {
   console.log('[Database] Connecting to Aiven PostgreSQL...')
@@ -133,6 +145,11 @@ export async function initDb() {
       ALTER TABLE projects ADD COLUMN IF NOT EXISTS workspace_type TEXT DEFAULT 'standard';
       ALTER TABLE projects ADD COLUMN IF NOT EXISTS byok_api_key TEXT;
       ALTER TABLE projects ADD COLUMN IF NOT EXISTS byok_provider TEXT;
+    `)
+    // User BYOK columns
+    await client.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS byok_provider TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS byok_api_key TEXT;
     `)
     console.log('[Database] Migrations executed successfully!')
     

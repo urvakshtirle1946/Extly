@@ -12,7 +12,8 @@ import {
   handleSaveFile,
   handleMessageFeedback,
   handleGetUsage,
-  handleUpgradePlan
+  handleUpgradePlan,
+  handleUpdateProjectSettings
 } from './controllers/project.controller'
 import { handleGenerate } from './controllers/ai.controller'
 import { 
@@ -23,7 +24,8 @@ import {
 } from './controllers/preview.controller'
 import { handleDownload } from './controllers/download.controller'
 import { handleGetHistory, handleRollback } from './controllers/history.controller'
-import { handleCreateOrder, handleVerifyPayment } from './controllers/payment.controller'
+import { handleCreateOrder, handleVerifyPayment, handleRazorpayWebhook } from './controllers/payment.controller'
+import { handleSaveUserByok, handleGetUserByok, handleDeleteUserByok } from './controllers/user.controller'
 
 const app = express()
 const port = process.env.PORT || 4000
@@ -48,8 +50,12 @@ app.use(
   })
 )
 
-// Parse JSON bodies
-app.use(express.json())
+// Parse JSON bodies, capturing raw body buffer for webhook signature verification
+app.use(express.json({
+  verify: (req: any, res, buf) => {
+    req.rawBody = buf
+  }
+}))
 
 console.log('[Server] CLERK_PUBLISHABLE_KEY is:', process.env.CLERK_PUBLISHABLE_KEY ? 'FOUND' : 'MISSING')
 console.log('[Server] CLERK_SECRET_KEY is:', process.env.CLERK_SECRET_KEY ? 'FOUND' : 'MISSING')
@@ -73,9 +79,13 @@ app.get('/api/projects/:id', authMiddleware as any, handleGetProject as any)
 app.post('/api/projects', authMiddleware as any, handleCreateProject as any)
 app.delete('/api/projects/:id', authMiddleware as any, handleDeleteProject as any)
 app.put('/api/projects/:id/files', authMiddleware as any, handleSaveFile as any)
+app.put('/api/projects/:id/settings', authMiddleware as any, handleUpdateProjectSettings as any)
 app.post('/api/projects/:id/messages/:messageId/feedback', authMiddleware as any, handleMessageFeedback as any)
 app.get('/api/usage', authMiddleware as any, handleGetUsage as any)
 app.post('/api/usage/upgrade', authMiddleware as any, handleUpgradePlan as any)
+app.post('/api/user/byok', authMiddleware as any, handleSaveUserByok as any)
+app.get('/api/user/byok', authMiddleware as any, handleGetUserByok as any)
+app.delete('/api/user/byok', authMiddleware as any, handleDeleteUserByok as any)
 
 // ============================================================================
 // AI & GENERATION ROUTES
@@ -106,6 +116,7 @@ app.post('/api/projects/:id/history/:genId/rollback', authMiddleware as any, han
 // ============================================================================
 app.post('/api/payment/create-order', authMiddleware as any, handleCreateOrder as any)
 app.post('/api/payment/verify', authMiddleware as any, handleVerifyPayment as any)
+app.post('/api/payment/webhook', handleRazorpayWebhook as any)
 
 // ============================================================================
 // ADMIN ROUTES

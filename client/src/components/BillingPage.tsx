@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRazorpay } from '@/hooks/useRazorpay';
+import { useUser } from '@clerk/nextjs';
 import { 
   ChevronRight, 
   ChevronDown, 
@@ -18,6 +19,11 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApiFetch } from '@/utils/api';
 import { PromptexLogoMark } from '@/components/ui/promptex-logo';
+import { AnimatedTicket } from '@/components/ui/ticket-confirmation-card';
+import { CartesianGrid, Line, LineChart as RechartsLineChart, XAxis } from 'recharts';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/line-chart';
 
 // Pro Credits Options & Prices
 const PRO_CREDITS_OPTIONS = [
@@ -43,14 +49,28 @@ const BUSINESS_CREDITS_OPTIONS = [
   { credits: 2000, price: 999 },
 ];
 
+const DEFAULT_USD_TO_INR = 94.98;
+
 export default function BillingPage() {
   const apiFetch = useApiFetch();
+  const { user } = useUser();
+  const [completedTransaction, setCompletedTransaction] = useState<{
+    ticketId: string;
+    amount: number;
+    date: Date;
+    cardHolder: string;
+    last4Digits: string;
+    barcodeValue: string;
+  } | null>(null);
+  const [isUsageGraphOpen, setIsUsageGraphOpen] = useState(false);
+  const [projectCount, setProjectCount] = useState(0);
+  const [usdToInrRate, setUsdToInrRate] = useState<number>(DEFAULT_USD_TO_INR);
+
   // Plan States
   const [selectedProIndex, setSelectedProIndex] = useState(0); // Default 20 credits
   const [selectedBusinessIndex, setSelectedBusinessIndex] = useState(0); // Default 100 credits
   
-  const [isProAnnual, setIsProAnnual] = useState(false);
-  const [isBusinessAnnual, setIsBusinessAnnual] = useState(false);
+
 
   // Modal Dialog toggles
   const [activeSelector, setActiveSelector] = useState<'pro' | 'business' | null>(null);
@@ -60,12 +80,13 @@ export default function BillingPage() {
   const [loadingUsage, setLoadingUsage] = useState(true);
   const [activePlan, setActivePlan] = useState<'free' | 'pro'>('free');
   const [dailyCredits, setDailyCredits] = useState<{ limit: number; usedToday: number; remaining: number }>({
-    limit: 5,
+    limit: 10,
     usedToday: 0,
-    remaining: 5
+    remaining: 10
   });
   const [isUpgrading, setIsUpgrading] = useState(false);
 
+  const [verifyingPayment, setVerifyingPayment] = useState(false);
   const { openCheckout } = useRazorpay();
 
   const loadUsageDetails = async () => {
@@ -78,6 +99,9 @@ export default function BillingPage() {
       if (data.plan) {
         setActivePlan(data.plan);
       }
+      if (typeof data.projectCount === 'number') {
+        setProjectCount(data.projectCount);
+      }
     } catch (err) {
       console.error('Failed to load usage:', err);
     } finally {
@@ -85,32 +109,68 @@ export default function BillingPage() {
     }
   };
 
+  // Fetch real-time exchange rate on mount
+  useEffect(() => {
+    const fetchExchangeRate = async () => {
+      try {
+        const res = await fetch('https://open.er-api.com/v6/latest/USD');
+        const data = await res.json();
+        if (data && data.rates && typeof data.rates.INR === 'number') {
+          setUsdToInrRate(data.rates.INR);
+          console.log('Real-time USD to INR rate loaded:', data.rates.INR);
+        }
+      } catch (err) {
+        console.error('Failed to fetch real-time exchange rate, using fallback:', err);
+      }
+    };
+    fetchExchangeRate();
+  }, []);
+
   // Fetch real usage data from backend
   useEffect(() => {
     loadUsageDetails();
   }, []);
 
   const handleUpgrade = async () => {
-    const price = getProPrice();
+    if (!activeSelector) return;
+    const isPro = activeSelector === 'pro';
+    const priceUSD = isPro ? getProPrice() : getBusinessPrice();
+    const priceINR = priceUSD * usdToInrRate;
+    const credits = isPro ? activePro.credits : activeBusiness.credits;
+    const planType = isPro ? 'pro' : 'business' as 'pro' | 'business';
+
     setIsUpgrading(true);
 
     openCheckout({
-      amount: price,           // ₹price
+      amount: priceINR,
+      currency: 'INR',
       name: 'Promptex',
-      description: `Pro Plan – ${formatCredits(activePro.credits)}`,
-      onSuccess: async ({ payment_id, order_id }) => {
+      description: `Upgrade to ${credits} Credits Plan`,
+      credits,
+      planType,
+      onSuccess: async (data) => {
+        setVerifyingPayment(true);
         try {
           await loadUsageDetails();
-          setActiveSelector(null);
-          alert(`🎉 Plan upgraded successfully! Payment ID: ${payment_id}`);
-        } catch (err: any) {
-          alert('Failed to refresh plan state. Please reload the page.');
+          const last4 = data.payment_id ? data.payment_id.slice(-4).replace(/[^0-9]/g, '4') : '4242';
+          setCompletedTransaction({
+            ticketId: data.payment_id || `TXN-${Date.now()}`,
+            amount: priceUSD,
+            date: new Date(),
+            cardHolder: user?.fullName || user?.primaryEmailAddress?.emailAddress?.split('@')[0] || 'Promptex Customer',
+            last4Digits: last4.length === 4 ? last4 : '4242',
+            barcodeValue: data.order_id || `BAR-${Date.now()}`,
+          });
+        } catch (err) {
+          console.error('Failed to load usage details after checkout:', err);
         } finally {
+          setVerifyingPayment(false);
           setIsUpgrading(false);
+          setActiveSelector(null);
         }
       },
       onError: (error) => {
-        alert('Payment failed: ' + error);
+        alert('Payment failed or cancelled: ' + error);
         setIsUpgrading(false);
       },
       onDismiss: () => {
@@ -177,16 +237,26 @@ export default function BillingPage() {
     return `${val.toLocaleString()} credits / month`;
   };
 
-  // Helper to calculate price (apply 20% discount if annual)
+  // Helper to calculate price
   const getProPrice = () => {
-    const raw = activePro.price;
-    return isProAnnual ? Math.floor(raw * 0.8) : raw;
+    return activePro.price;
   };
 
   const getBusinessPrice = () => {
-    const raw = activeBusiness.price;
-    return isBusinessAnnual ? Math.floor(raw * 0.8) : raw;
+    return activeBusiness.price;
   };
+
+  if (verifyingPayment) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center min-h-[400px] text-neutral-200">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-full border-4 border-t-purple-550 border-neutral-900 animate-spin" />
+          <h3 className="text-lg font-bold text-white">Verifying your payment...</h3>
+          <p className="text-xs text-neutral-500">Please do not close or reload this page.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-y-auto p-6 md:p-8 relative z-10 max-w-5xl w-full mx-auto font-sans text-neutral-200">
@@ -222,22 +292,47 @@ export default function BillingPage() {
             <div className="bg-neutral-950/80 border border-neutral-900/60 p-4 rounded-xl space-y-2 mb-4">
               <div className="flex items-center justify-between text-xs font-semibold text-neutral-350">
                 <span className="flex items-center gap-1.5">
-                  Daily build credits <HelpCircle className="w-3.5 h-3.5 text-neutral-500" />
+                  Build credits <HelpCircle className="w-3.5 h-3.5 text-neutral-500" />
                 </span>
-                <span className="text-white font-bold">{activePlan === 'pro' ? 'Unlimited' : `${dailyCredits.remaining} left`}</span>
+                <span className="text-white font-bold">{dailyCredits.remaining} left</span>
               </div>
               <div className="w-full h-2 bg-neutral-900 rounded-full overflow-hidden">
                 <div 
                   className={`h-full rounded-full transition-all duration-500 ${
-                    activePlan === 'pro' 
+                    activePlan !== 'free' 
                       ? 'bg-gradient-to-r from-purple-500 to-pink-500 shadow-md shadow-pink-500/20'
                       : 'bg-blue-500 shadow-lg shadow-blue-500/30'
                   }`}
-                  style={{ width: `${activePlan === 'pro' ? 100 : Math.max(0, Math.min(100, (dailyCredits.remaining / dailyCredits.limit) * 100))}%` }}
+                  style={{ width: `${Math.max(0, Math.min(100, (dailyCredits.remaining / dailyCredits.limit) * 100))}%` }}
                 />
               </div>
               <span className="text-[10px] text-neutral-500 block">
-                {activePlan === 'pro' ? 'Unlimited Pro plan active' : 'Resets at midnight UTC'}
+                {activePlan !== 'free' ? `${activePlan.toUpperCase()} plan active • ${dailyCredits.remaining}/${dailyCredits.limit} credits remaining` : 'Free usage credits'}
+              </span>
+            </div>
+
+            {/* Projects bar */}
+            <div className="bg-neutral-950/80 border border-neutral-900/60 p-4 rounded-xl space-y-2 mb-2">
+              <div className="flex items-center justify-between text-xs font-semibold text-neutral-350">
+                <span className="flex items-center gap-1.5">
+                  Project capacity <HelpCircle className="w-3.5 h-3.5 text-neutral-500" />
+                </span>
+                <span className="text-white font-bold">
+                  {activePlan !== 'free' ? `${projectCount} created` : `${projectCount} / 3 created`}
+                </span>
+              </div>
+              <div className="w-full h-2 bg-neutral-900 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    activePlan !== 'free' 
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 shadow-md shadow-pink-500/20'
+                      : 'bg-purple-500 shadow-lg shadow-purple-550/30'
+                  }`}
+                  style={{ width: `${activePlan !== 'free' ? 100 : Math.max(0, Math.min(100, (projectCount / 3) * 100))}%` }}
+                />
+              </div>
+              <span className="text-[10px] text-neutral-500 block">
+                {activePlan !== 'free' ? 'Unlimited project capacity active' : 'Up to 3 projects allowed on free plan'}
               </span>
             </div>
           </div>
@@ -319,7 +414,10 @@ export default function BillingPage() {
           </div>
 
           <div className="mt-4">
-            <button className="px-3.5 py-1.5 bg-neutral-900 hover:bg-neutral-850 border border-neutral-850 text-neutral-300 font-bold rounded-lg transition-colors text-xs">
+            <button 
+              onClick={() => setIsUsageGraphOpen(true)}
+              className="px-3.5 py-1.5 bg-neutral-900 hover:bg-neutral-850 border border-neutral-850 text-neutral-350 font-bold rounded-lg transition-colors text-xs cursor-pointer"
+            >
               More usage details
             </button>
           </div>
@@ -341,19 +439,7 @@ export default function BillingPage() {
               <span className="text-4xl font-black text-white">${getProPrice()}</span>
               <span className="text-neutral-400 text-sm font-semibold">per month</span>
             </div>
-            <p className="text-[11px] text-neutral-500">shared across unlimited users • {isProAnnual ? "billed annually ($" + getProPrice() * 12 + "/yr)" : "cancel anytime"}</p>
-          </div>
-
-          {/* Annual billing switch */}
-          <div className="flex items-center gap-3 py-1">
-            <button 
-              type="button"
-              onClick={() => setIsProAnnual(!isProAnnual)}
-              className={`w-9 h-5 rounded-full p-0.5 transition-colors flex items-center cursor-pointer ${isProAnnual ? 'bg-purple-600' : 'bg-neutral-800'}`}
-            >
-              <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 transform ${isProAnnual ? 'translate-x-4' : 'translate-x-0'}`} />
-            </button>
-            <span className="text-xs font-semibold text-neutral-350">Annual billing (save 20%)</span>
+            <p className="text-[11px] text-neutral-500">shared across unlimited users • cancel anytime</p>
           </div>
 
           {/* Credit Selector box */}
@@ -392,6 +478,10 @@ export default function BillingPage() {
               <li className="flex items-start gap-2.5">
                 <Check className="w-4 h-4 text-purple-400 shrink-0" strokeWidth={3} />
                 <span>On-demand credit top-ups</span>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <Check className="w-4 h-4 text-purple-400 shrink-0" strokeWidth={3} />
+                <span>Unlimited projects (3 limit on free)</span>
               </li>
             </ul>
           </div>
@@ -442,10 +532,7 @@ export default function BillingPage() {
                 
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-extrabold text-white">
-                    ${activeSelector === 'pro' 
-                      ? (isProAnnual ? Math.floor(activePro.price * 0.8) : activePro.price)
-                      : (isBusinessAnnual ? Math.floor(activeBusiness.price * 0.8) : activeBusiness.price)
-                    }
+                    ${activeSelector === 'pro' ? activePro.price : activeBusiness.price}
                   </span>
                   <span className="text-neutral-500 text-xs font-semibold">per month</span>
                 </div>
@@ -531,6 +618,158 @@ export default function BillingPage() {
                 </button>
               </div>
 
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Transaction Confirmation Ticket Modal */}
+      <AnimatePresence>
+        {completedTransaction !== null && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            {/* Backdrop Overlay */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setCompletedTransaction(null)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            />
+
+            {/* Ticket wrapper */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+              className="relative z-50 w-full max-w-sm flex flex-col items-center gap-4"
+            >
+              <AnimatedTicket
+                ticketId={completedTransaction.ticketId}
+                amount={completedTransaction.amount}
+                date={completedTransaction.date}
+                cardHolder={completedTransaction.cardHolder}
+                last4Digits={completedTransaction.last4Digits}
+                barcodeValue={completedTransaction.barcodeValue}
+                className="w-full shadow-2xl border border-neutral-900 bg-neutral-950 text-neutral-200"
+              />
+
+              <button 
+                onClick={() => setCompletedTransaction(null)}
+                className="px-6 py-2.5 bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 hover:border-neutral-700 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer shadow-md"
+              >
+                Close Ticket
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Usage Graph Modal Overlay */}
+      <AnimatePresence>
+        {isUsageGraphOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            {/* Backdrop Overlay */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsUsageGraphOpen(false)}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            />
+
+            {/* Modal Dialog Card wrapper */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="relative z-50 w-full max-w-2xl"
+            >
+              <Card className="w-full bg-[#131315]/95 border border-neutral-900 shadow-2xl p-6 relative overflow-hidden select-none">
+                <CardHeader className="flex flex-row items-center justify-between pb-6 p-0">
+                  <div>
+                    <CardTitle className="text-xl font-bold text-white flex items-center gap-2 leading-none">
+                      Extension Build Activity
+                      {totalBuilds > 0 && (
+                        <Badge
+                          variant="outline"
+                          className="text-purple-400 bg-purple-950/30 border-purple-900/40 ml-2 py-0.5 text-[10px]"
+                        >
+                          <TrendingUp className="h-3 w-3 mr-1" />
+                          <span>Active</span>
+                        </Badge>
+                      )}
+                    </CardTitle>
+                    <CardDescription className="text-xs text-neutral-500 mt-1.5">Last 30 days build statistics</CardDescription>
+                  </div>
+                  <button 
+                    onClick={() => setIsUsageGraphOpen(false)}
+                    className="absolute right-6 top-6 rounded-full bg-neutral-900 border border-neutral-850 p-1.5 hover:bg-neutral-850 transition-colors cursor-pointer"
+                  >
+                    <X className="w-4 h-4 text-neutral-400" />
+                  </button>
+                </CardHeader>
+                <CardContent className="p-0 pt-2">
+                  {loadingUsage ? (
+                    <div className="h-64 flex items-center justify-center text-xs text-neutral-500 animate-pulse">
+                      Loading chart data...
+                    </div>
+                  ) : usageData.length === 0 ? (
+                    <div className="h-64 flex items-center justify-center text-xs text-neutral-500">
+                      No builds recorded in the last 30 days.
+                    </div>
+                  ) : (
+                    <ChartContainer 
+                      config={{
+                        count: {
+                          label: "Builds",
+                          color: "#844cf2"
+                        }
+                      }} 
+                      className="w-full aspect-auto h-64 [&_.recharts-cartesian-grid_line]:stroke-neutral-900"
+                    >
+                      <RechartsLineChart
+                        accessibilityLayer
+                        data={usageData}
+                        margin={{
+                          left: 12,
+                          right: 12,
+                          top: 10,
+                          bottom: 10
+                        }}
+                      >
+                        <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                        <XAxis
+                          dataKey="date"
+                          tickLine={false}
+                          axisLine={false}
+                          tickMargin={8}
+                          tickFormatter={(value) => {
+                            const parts = value.split('-');
+                            if (parts.length === 3) {
+                              const day = parseInt(parts[2], 10);
+                              return day % 5 === 0 ? parts[2] : '';
+                            }
+                            return value;
+                          }}
+                        />
+                        <ChartTooltip
+                          cursor={{ stroke: 'rgba(255, 255, 255, 0.1)', strokeWidth: 1 }}
+                          content={<ChartTooltipContent nameKey="count" />}
+                        />
+                        <Line
+                          dataKey="count"
+                          type="monotone"
+                          stroke="#844cf2"
+                          strokeWidth={2}
+                          dot={{ r: 3, fill: '#844cf2', strokeWidth: 0 }}
+                          activeDot={{ r: 5, fill: '#a855f7' }}
+                        />
+                      </RechartsLineChart>
+                    </ChartContainer>
+                  )}
+                </CardContent>
+              </Card>
             </motion.div>
           </div>
         )}

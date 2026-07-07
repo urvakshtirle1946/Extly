@@ -24,7 +24,8 @@ import {
   X,
   Zap,
   Check,
-  Plus
+  Plus,
+  Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -83,7 +84,8 @@ function WorkspaceSwitcher({ selected, onSelect, userEmail }: { selected?: strin
   const initial = current.charAt(0).toUpperCase();
 
   const [activePlan, setActivePlan] = useState<'free' | 'pro'>('free');
-  const [remainingCredits, setRemainingCredits] = useState(5);
+  const [remainingCredits, setRemainingCredits] = useState(10);
+  const [limitCredits, setLimitCredits] = useState(10);
   const apiFetch = useApiFetch();
 
   // Sync remaining credits and plan state on mount and when switcher is opened
@@ -96,6 +98,7 @@ function WorkspaceSwitcher({ selected, onSelect, userEmail }: { selected?: strin
         }
         if (data.dailyCredits) {
           setRemainingCredits(data.dailyCredits.remaining);
+          setLimitCredits(data.dailyCredits.limit);
         }
       } catch (err) {
         console.error('Failed to load usage in sidebar:', err);
@@ -178,23 +181,23 @@ function WorkspaceSwitcher({ selected, onSelect, userEmail }: { selected?: strin
                 <div className="flex items-center justify-between">
                   <span className="text-[12px] font-bold text-neutral-250">Credits</span>
                   <span className="text-[11px] font-semibold text-neutral-400 transition-colors flex items-center gap-0.5">
-                    {activePlan === 'pro' ? 'Unlimited' : `${remainingCredits} left`} <ChevronRight className="w-3 h-3 text-neutral-500" />
+                    {remainingCredits} left <ChevronRight className="w-3 h-3 text-neutral-500" />
                   </span>
                 </div>
                 {/* Progress bar */}
                 <div className="w-full h-1.5 bg-neutral-900 rounded-full overflow-hidden">
                   <div 
                     className={`h-full rounded-full transition-all duration-300 ${
-                      activePlan === 'pro' 
+                      activePlan !== 'free' 
                         ? 'bg-gradient-to-r from-purple-500 to-pink-500 shadow-md shadow-pink-500/20' 
                         : 'bg-blue-500 shadow-lg shadow-blue-500/50'
                     }`}
-                    style={{ width: `${activePlan === 'pro' ? 100 : (remainingCredits / 5) * 100}%` }}
+                    style={{ width: `${Math.max(0, Math.min(100, (remainingCredits / limitCredits) * 100))}%` }}
                   />
                 </div>
                 <div className="flex items-center gap-1.5 text-[9px] text-neutral-500 leading-none">
                   <span className="w-1.5 h-1.5 rounded-full bg-neutral-555 shrink-0" />
-                  <span>{activePlan === 'pro' ? 'Unlimited Pro plan active' : 'Daily credits reset at midnight UTC'}</span>
+                  <span>{activePlan !== 'free' ? `${activePlan.toUpperCase()} plan active • ${remainingCredits}/${limitCredits} credits` : 'Daily credits reset at midnight UTC'}</span>
                 </div>
               </div>
 
@@ -299,7 +302,6 @@ function NavItem({
     </div>
   );
 }
-
 export function SidebarNav({ 
   className = '',
   activeId,
@@ -307,7 +309,7 @@ export function SidebarNav({
   activeWorkspace,
   onWorkspaceSelect,
   userEmail,
-  projects = []
+  projects = [],
 }: { 
   className?: string,
   activeId?: string,
@@ -315,7 +317,7 @@ export function SidebarNav({
   activeWorkspace?: string,
   onWorkspaceSelect?: (ws: string) => void,
   userEmail?: string,
-  projects?: Array<{ id: string, name: string }>
+  projects?: Array<{ id: string, name: string }>,
 }) {
   const [internalId, setInternalId] = useState('home');
   const currentId = activeId !== undefined ? activeId : internalId;

@@ -32,9 +32,30 @@ export async function handleGenerate(req: AuthenticatedRequest, res: Response) {
       return res.status(404).json({ error: 'Project not found or unauthorized' })
     }
 
-    isBYOK = projectMeta.rows[0]?.workspace_type === 'byok'
-    byokApiKey = projectMeta.rows[0]?.byok_api_key || null
-    byokProvider = projectMeta.rows[0]?.byok_provider || 'openrouter'
+    const useByok = req.body.useByok === true
+    let userByokKey: string | null = null
+    let userByokProvider: string = 'openrouter'
+
+    if (useByok) {
+      const { rows: userRows } = await db.query(
+        'SELECT byok_api_key, byok_provider FROM users WHERE id = $1',
+        [userId]
+      )
+      if (!userRows[0]?.byok_api_key) {
+        return res.status(400).json({ 
+          error: 'No BYOK key configured. Please set up your API key first.' 
+        })
+      }
+      userByokKey = decryptKey(userRows[0].byok_api_key)
+      userByokProvider = userRows[0].byok_provider || 'openrouter'
+      isBYOK = true
+      byokApiKey = userRows[0].byok_api_key
+      byokProvider = userByokProvider
+    } else {
+      isBYOK = projectMeta.rows[0]?.workspace_type === 'byok'
+      byokApiKey = projectMeta.rows[0]?.byok_api_key || null
+      byokProvider = projectMeta.rows[0]?.byok_provider || 'openrouter'
+    }
 
     if (isBYOK) {
       // BYOK workspace — no credit check, just validate key exists

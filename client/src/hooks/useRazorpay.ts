@@ -31,6 +31,8 @@ export interface RazorpayOptions {
   currency?: string
   name?: string
   description?: string
+  credits?: number
+  planType?: string
   onSuccess?: (data: { payment_id: string; order_id: string }) => void
   onError?: (error: string) => void
   onDismiss?: () => void
@@ -45,6 +47,8 @@ export function useRazorpay() {
       currency = 'INR',
       name = 'Promptex',
       description = 'Pro Plan Upgrade',
+      credits,
+      planType,
       onSuccess,
       onError,
       onDismiss,
@@ -72,7 +76,7 @@ export function useRazorpay() {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ amount, currency }),
+          body: JSON.stringify({ amount, currency, credits, planType }),
         })
 
         if (!res.ok) {
@@ -89,7 +93,7 @@ export function useRazorpay() {
 
       // 4. Open Razorpay modal
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_T8VDrPsIxLDRBL',
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_live_TAZA36HWyd2Qxt',
         amount: order.amount,
         currency: order.currency,
         name,

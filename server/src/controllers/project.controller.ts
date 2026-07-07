@@ -69,6 +69,24 @@ export async function handleCreateProject(req: AuthenticatedRequest, res: Respon
     return res.status(400).json({ error: 'Name and description are required' })
   }
 
+  // 0. Check project limit for free tier
+  try {
+    const userResult = await db.query('SELECT plan FROM users WHERE id = $1', [userId])
+    const plan = userResult.rows[0]?.plan || 'free'
+    if (plan !== 'pro' && plan !== 'business') {
+      const projectCountResult = await db.query('SELECT COUNT(*) FROM projects WHERE user_id = $1', [userId])
+      const projectCount = parseInt(projectCountResult.rows[0]?.count || '0', 10)
+      if (projectCount >= 3) {
+        return res.status(403).json({
+          error: 'Free tier limit reached: You can only create up to 3 projects. Please upgrade your plan in the Billing section to create more projects.'
+        })
+      }
+    }
+  } catch (error: any) {
+    console.error('Error checking project limits:', error)
+    return res.status(500).json({ error: 'Failed to verify project limits.' })
+  }
+
   // Validate BYOK: key is required when workspace type is byok
   if (workspace_type === 'byok' && !byok_api_key) {
     return res.status(400).json({ error: 'API key is required for BYOK workspace.' })
@@ -252,9 +270,17 @@ export async function handleGetUsage(req: AuthenticatedRequest, res: Response) {
     const used = userResult.rows[0]?.used_credits ?? 0
     const remaining = Math.max(0, total - used)
 
+    // 4. Fetch user project count
+    const projectCountResult = await db.query(
+      'SELECT COUNT(*)::int as count FROM projects WHERE user_id = $1',
+      [userId]
+    )
+    const projectCount = projectCountResult.rows[0]?.count || 0
+
     return res.status(200).json({
       chartData: chartResult.rows,
       plan,
+      projectCount,
       dailyCredits: {
         limit: total,
         usedToday: used,
@@ -282,5 +308,49 @@ export async function handleUpgradePlan(req: AuthenticatedRequest, res: Response
   } catch (error: any) {
     console.error('Error upgrading plan:', error)
     return res.status(500).json({ error: error.message || 'Failed to upgrade plan' })
+  }
+}
+
+export async function handleUpdateProjectSettings(req: AuthenticatedRequest, res: Response) {
+  const userId = req.user?.id
+  const { id: projectId } = req.params
+  const { workspace_type, byok_provider, byok_api_key } = req.body
+
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' })
+
+  try {
+    // 1. Verify project ownership
+    const projectResult = await db.query(
+      'SELECT id, workspace_type, byok_api_key, byok_provider FROM projects WHERE id = $1 AND user_id = $2',
+      [projectId, userId]
+    )
+
+    if (projectResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Project not found' })
+    }
+
+    let encryptedKey = projectResult.rows[0].byok_api_key
+    if (workspace_type === 'byok' && byok_api_key) {
+      // Key is provided: encrypt it
+      encryptedKey = encryptKey(byok_api_key)
+    } else if (workspace_type !== 'byok') {
+      encryptedKey = null
+    }
+
+    // 2. Update settings
+    await db.query(
+      `UPDATE projects 
+       SET workspace_type = $1, 
+           byok_provider = $2, 
+           byok_api_key = $3, 
+           updated_at = NOW() 
+       WHERE id = $4 AND user_id = $5`,
+      [workspace_type || 'standard', byok_provider || null, encryptedKey, projectId, userId]
+    )
+
+    return res.status(200).json({ success: true, workspace_type, byok_provider })
+  } catch (error: any) {
+    console.error('Error updating project settings:', error)
+    return res.status(500).json({ error: error.message || 'Failed to update project settings' })
   }
 }
