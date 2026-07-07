@@ -39,7 +39,8 @@ app.use(
         !origin ||                          // Postman / server-to-server
         origin.includes('localhost') ||     // Local dev
         origin.includes('vercel.app') ||    // Any Vercel preview or production URL
-        origin.includes('promptex.io')         // Future custom domain
+        origin.includes('promptex.io') ||   // Future custom domain
+        origin.includes('promptex.tech')    // Production custom domain
       ) {
         callback(null, true)
       } else {
