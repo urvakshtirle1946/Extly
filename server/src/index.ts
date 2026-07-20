@@ -26,6 +26,8 @@ import { handleDownload } from './controllers/download.controller'
 import { handleGetHistory, handleRollback } from './controllers/history.controller'
 import { handleCreateOrder, handleVerifyPayment, handleRazorpayWebhook } from './controllers/payment.controller'
 import { handleSaveUserByok, handleGetUserByok, handleDeleteUserByok } from './controllers/user.controller'
+import { handleLintProject } from './controllers/lint.controller'
+import { handleGenerateCICD } from './controllers/cicd.controller'
 
 const app = express()
 const port = process.env.PORT || 4000
@@ -102,9 +104,11 @@ app.get('/api/preview/:sessionId/logs', handleGetLogs as any)
 app.delete('/api/preview/:sessionId', authMiddleware as any, handleStopPreview as any)
 
 // ============================================================================
-// DOWNLOAD ROUTES
+// DOWNLOAD & UTILITY ROUTES (web-ext & Bedframe patterns)
 // ============================================================================
 app.post('/api/download', authMiddleware as any, handleDownload as any)
+app.post('/api/projects/:id/lint', authMiddleware as any, handleLintProject as any)
+app.get('/api/projects/:id/cicd', authMiddleware as any, handleGenerateCICD as any)
 
 // ============================================================================
 // VERSION HISTORY ROUTES

@@ -1,8 +1,14 @@
 import { Response } from 'express'
-import { validateManifest } from '../services/manifest.service'
+import { validateManifest, autoGenerateManifest } from '../services/manifest.service'
 import { lintExtension, buildExtension } from '../services/webext.service'
 import { db } from '../config/db'
 import { AuthenticatedRequest } from '../middleware/auth.middleware'
+import {
+  RUNTIME_STORAGE_HELPER,
+  RUNTIME_MESSAGING_HELPER,
+  RUNTIME_SHADOWDOM_HELPER,
+  RUNTIME_CSUI_HELPER,
+} from '../utils/extensionHelpers'
 import fs from 'fs'
 import path from 'path'
 
@@ -63,35 +69,41 @@ export async function handleDownload(req: AuthenticatedRequest, res: Response) {
   try {
     // Verify ownership
     const projectCheck = await db.query(
-      'SELECT id FROM projects WHERE id = $1 AND user_id = $2',
+      'SELECT id, name FROM projects WHERE id = $1 AND user_id = $2',
       [projectId, userId]
     )
     if (projectCheck.rows.length === 0) {
       return res.status(404).json({ error: 'Project not found or unauthorized' })
     }
 
-    // 1. Custom Manifest Validation
+    const projectName = projectCheck.rows[0].name || 'extension'
+
+    // 1. Custom Manifest Validation & Auto-Generation Fallback (WXT pattern)
+    let manifest: any
     const manifestErrors = validateManifest(files)
     const criticalErrors = manifestErrors.filter((err) => err.severity === 'error')
-    if (criticalErrors.length > 0) {
-      return res.status(400).json({
-        error: 'Manifest validation failed',
-        details: criticalErrors.map((e) => e.message),
-      })
+
+    if (criticalErrors.length > 0 || !files['manifest.json']) {
+      manifest = autoGenerateManifest(files, projectName)
+    } else {
+      manifest = JSON.parse(files['manifest.json'])
     }
 
     // Create directories
     fs.mkdirSync(tempDir, { recursive: true })
+    fs.mkdirSync(path.join(tempDir, 'utils'), { recursive: true })
 
-    // 2. Write files and inject polyfill
+    // 2. Write runtime helper libraries (Plasmo & Addfox patterns)
     fs.writeFileSync(path.join(tempDir, 'browser-polyfill.js'), POLYFILL_CONTENT)
-
-    const manifest = JSON.parse(files['manifest.json'])
+    fs.writeFileSync(path.join(tempDir, 'utils', 'storage.js'), RUNTIME_STORAGE_HELPER)
+    fs.writeFileSync(path.join(tempDir, 'utils', 'messaging.js'), RUNTIME_MESSAGING_HELPER)
+    fs.writeFileSync(path.join(tempDir, 'utils', 'shadowDom.js'), RUNTIME_SHADOWDOM_HELPER)
+    fs.writeFileSync(path.join(tempDir, 'utils', 'csui.js'), RUNTIME_CSUI_HELPER)
 
     if (manifest.background && manifest.background.service_worker) {
       const swPath = manifest.background.service_worker
       if (files[swPath]) {
-        const swContent = `importScripts('browser-polyfill.js');\n` + files[swPath]
+        const swContent = `importScripts('browser-polyfill.js');\nimportScripts('utils/storage.js');\nimportScripts('utils/messaging.js');\n` + files[swPath]
         const swFullPath = path.join(tempDir, swPath)
         fs.mkdirSync(path.dirname(swFullPath), { recursive: true })
         fs.writeFileSync(swFullPath, swContent)
@@ -101,6 +113,10 @@ export async function handleDownload(req: AuthenticatedRequest, res: Response) {
     if (manifest.content_scripts) {
       manifest.content_scripts.forEach((script: any) => {
         if (script.js) {
+          script.js.unshift('utils/csui.js')
+          script.js.unshift('utils/shadowDom.js')
+          script.js.unshift('utils/messaging.js')
+          script.js.unshift('utils/storage.js')
           script.js.unshift('browser-polyfill.js')
         }
       })
@@ -116,7 +132,7 @@ export async function handleDownload(req: AuthenticatedRequest, res: Response) {
       if (filePath.endsWith('.html')) {
         const injectedHtml = content.replace(
           '<head>',
-          '<head><script src="browser-polyfill.js"></script>'
+          '<head><script src="browser-polyfill.js"></script><script src="utils/storage.js"></script><script src="utils/messaging.js"></script>'
         )
         fs.writeFileSync(fullPath, injectedHtml)
       } else {
@@ -126,12 +142,13 @@ export async function handleDownload(req: AuthenticatedRequest, res: Response) {
 
     fs.writeFileSync(path.join(tempDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
 
-    // 3. web-ext lint
+    // 3. web-ext lint (web-ext pattern)
     const lintResult = await lintExtension(tempDir)
     if (!lintResult.success) {
       return res.status(400).json({
         error: 'web-ext lint validation failed',
         details: lintResult.errors,
+        diagnostics: lintResult.diagnostics,
       })
     }
 
@@ -140,7 +157,7 @@ export async function handleDownload(req: AuthenticatedRequest, res: Response) {
 
     // 5. Stream ZIP file back to client
     res.setHeader('Content-Type', 'application/zip')
-    res.setHeader('Content-Disposition', `attachment; filename="${manifest.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_extension.zip"`)
+    res.setHeader('Content-Disposition', `attachment; filename="${(manifest.name || projectName).replace(/[^a-z0-9]/gi, '_').toLowerCase()}_extension.zip"`)
 
     const fileStream = fs.createReadStream(zipPath)
     fileStream.pipe(res)

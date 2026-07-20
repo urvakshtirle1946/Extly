@@ -80,11 +80,16 @@ chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
   });
 });
 
-4. STORAGE
-- Use chrome.storage.local for persistent data (NOT localStorage in content scripts)
-- chrome.storage.local.set({key: value})
-- chrome.storage.local.get(['key'], (result) => { ... })
-- For large data use chrome.storage.local (5MB limit)
+4. STORAGE & MESSAGING (Plasmo Patterns)
+- Use chrome.storage.local (or ExtensionStorage helper) for persistent state across sessions.
+- Use structured message passing (ExtensionMessaging helper) between content scripts, background workers, and popups.
+
+5. CONTENT SCRIPT UI & SHADOW DOM (Addfox / Plasmo CSUI Patterns)
+- When injecting UI into external web pages, render inside a Shadow Root (ExtensionShadowDOM or ExtensionCSUI helper) to prevent page CSS contamination and event leaks.
+
+6. WXT ENTRYPOINT CONVENTIONS & MV3 RULES
+- Keep entrypoints clean (popup.html, sidepanel.html, background.js, content.js).
+- Ensure background service worker uses MV3 event listeners and offloads tasks properly.
 
 5. PERMISSIONS — only request what is needed:
 - "activeTab" — current tab access

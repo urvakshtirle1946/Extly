@@ -3,16 +3,29 @@ import webExt from 'web-ext'
 import path from 'path'
 import fs from 'fs'
 
-export interface LintResult {
+export interface LintDiagnostic {
+  code?: string
+  message: string
+  file: string
+  line: number
+  column: number
+  level: 'error' | 'warning' | 'notice'
+  description?: string
+}
+
+export interface DetailedLintResult {
   success: boolean
+  errorsCount: number
+  warningsCount: number
+  diagnostics: LintDiagnostic[]
   errors: string[]
   warnings: string[]
 }
 
 /**
- * Runs web-ext lint on the specified directory.
+ * Runs web-ext lint on the specified directory and returns detailed diagnostic reports.
  */
-export async function lintExtension(sourceDir: string): Promise<LintResult> {
+export async function lintExtension(sourceDir: string): Promise<DetailedLintResult> {
   try {
     const result = await webExt.cmd.lint(
       {
@@ -27,20 +40,46 @@ export async function lintExtension(sourceDir: string): Promise<LintResult> {
 
     const errors: string[] = []
     const warnings: string[] = []
+    const diagnostics: LintDiagnostic[] = []
+
+    let errorsCount = 0
+    let warningsCount = 0
 
     if (result && result.errors) {
       result.errors.forEach((err: any) => {
-        const msg = `${err.message} (${err.file || 'manifest.json'}:${err.line || 0})`
-        if (err.level === 'error') {
-          errors.push(msg)
+        const file = err.file || 'manifest.json'
+        const line = err.line || 1
+        const column = err.column || 1
+        const level: 'error' | 'warning' | 'notice' = err.level === 'error' ? 'error' : 'warning'
+
+        const diagnostic: LintDiagnostic = {
+          code: err.code || err.rule,
+          message: err.message,
+          file,
+          line,
+          column,
+          level,
+          description: err.description,
+        }
+
+        diagnostics.push(diagnostic)
+
+        const formattedMsg = `[${level.toUpperCase()}] ${err.message} (${file}:${line}:${column})`
+        if (level === 'error') {
+          errorsCount++
+          errors.push(formattedMsg)
         } else {
-          warnings.push(msg)
+          warningsCount++
+          warnings.push(formattedMsg)
         }
       })
     }
 
     return {
-      success: errors.length === 0,
+      success: errorsCount === 0,
+      errorsCount,
+      warningsCount,
+      diagnostics,
       errors,
       warnings,
     }
@@ -48,6 +87,17 @@ export async function lintExtension(sourceDir: string): Promise<LintResult> {
     console.error('web-ext lint failed:', error)
     return {
       success: false,
+      errorsCount: 1,
+      warningsCount: 0,
+      diagnostics: [
+        {
+          message: error.message || 'web-ext lint execution failed',
+          file: 'manifest.json',
+          line: 1,
+          column: 1,
+          level: 'error',
+        },
+      ],
       errors: [error.message || 'web-ext lint execution failed'],
       warnings: [],
     }
