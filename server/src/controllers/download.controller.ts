@@ -1,6 +1,7 @@
 import { Response } from 'express'
 import { validateManifest, autoGenerateManifest } from '../services/manifest.service'
 import { lintExtension, buildExtension } from '../services/webext.service'
+import { generateCICDWorkflows } from '../services/cicd.service'
 import { db } from '../config/db'
 import { AuthenticatedRequest } from '../middleware/auth.middleware'
 import {
@@ -100,6 +101,14 @@ export async function handleDownload(req: AuthenticatedRequest, res: Response) {
     fs.writeFileSync(path.join(tempDir, 'utils', 'shadowDom.js'), RUNTIME_SHADOWDOM_HELPER)
     fs.writeFileSync(path.join(tempDir, 'utils', 'csui.js'), RUNTIME_CSUI_HELPER)
 
+    // 3. Automatically bundle Bedframe CI/CD publishing workflows
+    const cicdWorkflows = generateCICDWorkflows(projectName)
+    const githubDir = path.join(tempDir, '.github', 'workflows')
+    fs.mkdirSync(githubDir, { recursive: true })
+    fs.writeFileSync(path.join(githubDir, 'publish.yml'), cicdWorkflows['publish.yml'])
+    fs.writeFileSync(path.join(githubDir, 'lint.yml'), cicdWorkflows['lint.yml'])
+    fs.writeFileSync(path.join(tempDir, 'README-CICD.md'), cicdWorkflows['README-CICD.md'])
+
     if (manifest.background && manifest.background.service_worker) {
       const swPath = manifest.background.service_worker
       if (files[swPath]) {
@@ -142,7 +151,7 @@ export async function handleDownload(req: AuthenticatedRequest, res: Response) {
 
     fs.writeFileSync(path.join(tempDir, 'manifest.json'), JSON.stringify(manifest, null, 2))
 
-    // 3. web-ext lint (web-ext pattern)
+    // 4. Automatic web-ext linting before packaging (web-ext pattern)
     const lintResult = await lintExtension(tempDir)
     if (!lintResult.success) {
       return res.status(400).json({
@@ -152,10 +161,10 @@ export async function handleDownload(req: AuthenticatedRequest, res: Response) {
       })
     }
 
-    // 4. web-ext build
+    // 5. web-ext build
     const zipPath = await buildExtension(tempDir, artifactsDir)
 
-    // 5. Stream ZIP file back to client
+    // 6. Stream ZIP file back to client
     res.setHeader('Content-Type', 'application/zip')
     res.setHeader('Content-Disposition', `attachment; filename="${(manifest.name || projectName).replace(/[^a-z0-9]/gi, '_').toLowerCase()}_extension.zip"`)
 
