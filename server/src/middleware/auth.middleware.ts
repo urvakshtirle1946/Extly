@@ -34,18 +34,19 @@ export async function authMiddleware(req: AuthenticatedRequest, res: Response, n
     }
 
     // 2. Validate the 'azp' claim against allowed patterns
-    const isAuthorizedPartyValid = 
-      azp && (
-        azp.includes('localhost') || 
-        azp.includes('vercel.app') || 
-        azp.includes('promptex.io') ||
-        azp.includes('promptex.tech')
-      )
+    const trustedOrigins = [
+      'localhost',
+      'vercel.app', 
+      'promptex.tech',
+      'extly.io'
+    ]
+
+    const isAzpTrusted = !azp || trustedOrigins.some(o => azp.includes(o))
 
     // Verify the Clerk session token
     const payload = await verifyToken(token, {
       secretKey: process.env.CLERK_SECRET_KEY!,
-      authorizedParties: isAuthorizedPartyValid && azp ? [azp as string] : [],
+      authorizedParties: isAzpTrusted && azp ? [azp as string] : [],
     })
 
     if (!payload || !payload.sub) {

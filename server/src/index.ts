@@ -38,15 +38,15 @@ app.use(
   cors({
     origin: (origin, callback) => {
       if (
-        !origin ||                          // Postman / server-to-server
-        origin.includes('localhost') ||     // Local dev
-        origin.includes('vercel.app') ||    // Any Vercel preview or production URL
-        origin.includes('promptex.io') ||   // Future custom domain
-        origin.includes('promptex.tech')    // Production custom domain
+        !origin ||
+        origin.includes('localhost') ||
+        origin.includes('vercel.app') ||
+        origin.includes('promptex.tech') ||
+        origin.includes('extly.io')
       ) {
         callback(null, true)
       } else {
-        callback(new Error(`CORS: origin '${origin}' not allowed`))
+        callback(new Error('Not allowed by CORS'))
       }
     },
     credentials: true,
