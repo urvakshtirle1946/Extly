@@ -11,6 +11,20 @@ export interface AuthenticatedRequest extends Request {
   }
 }
 
+const TRUSTED_ORIGINS = [
+  'localhost',
+  'vercel.app',
+  'promptex.tech',
+  'promptex.app',
+  'extly.io',
+  'extly.onrender.com',
+]
+
+export function isTrustedOrigin(origin: string): boolean {
+  if (!origin) return true
+  return TRUSTED_ORIGINS.some(trusted => origin.includes(trusted))
+}
+
 export async function authMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization
 
@@ -33,20 +47,23 @@ export async function authMiddleware(req: AuthenticatedRequest, res: Response, n
       console.warn('[Auth] Failed to decode token payload:', err)
     }
 
-    // 2. Validate the 'azp' claim against allowed patterns
-    const trustedOrigins = [
-      'localhost',
-      'vercel.app', 
-      'promptex.tech',
-      'extly.io'
-    ]
+    // Dynamic authorized parties list
+    const authorizedPartiesList = TRUSTED_ORIGINS.flatMap(o => [
+      `https://${o}`,
+      `https://www.${o}`,
+      `http://${o}`,
+      `http://localhost:3000`,
+      `http://localhost:4000`,
+    ])
 
-    const isAzpTrusted = !azp || trustedOrigins.some(o => azp.includes(o))
+    if (azp && isTrustedOrigin(azp) && !authorizedPartiesList.includes(azp)) {
+      authorizedPartiesList.push(azp)
+    }
 
     // Verify the Clerk session token
     const payload = await verifyToken(token, {
       secretKey: process.env.CLERK_SECRET_KEY!,
-      authorizedParties: isAzpTrusted && azp ? [azp as string] : [],
+      authorizedParties: authorizedPartiesList
     })
 
     if (!payload || !payload.sub) {
