@@ -73,8 +73,9 @@ export default function RootPage() {
               console.error('No project ID in response', data)
               setCreatingProject(false)
             }
-          } catch (err) {
+          } catch (err: any) {
             console.error('Failed to auto-create project:', err)
+            alert(err.message || 'Failed to create project. Please sign out and sign in again.')
             setCreatingProject(false)
           }
         }
@@ -107,8 +108,9 @@ export default function RootPage() {
         })
       })
       router.push(`/projects/${data.id || data.project?.id}`)
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to create project:', err)
+      alert(err.message || 'Failed to create project. Please sign out and sign in again.')
       setCreatingProject(false)
     }
   }
