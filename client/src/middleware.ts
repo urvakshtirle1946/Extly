@@ -11,8 +11,8 @@ export default clerkMiddleware((auth, request) => {
   // All routes are public unless protected explicitly
   // Route protection is handled client-side via AuthContext
 }, {
-  secretKey: process.env.CLERK_SECRET_KEY || 'sk_test_y7A2jp6d9b4PwozIC9zJwZwDQLBJS2UhsK35Gwh0iV',
-  publishableKey: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_c2VsZWN0LWdyb3VzZS02My5jbGVyay5hY2NvdW50cy5kZXYk'
+  secretKey: process.env.CLERK_SECRET_KEY,
+  publishableKey: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 })
 
 export const config = {
