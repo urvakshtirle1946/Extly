@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { useAuth } from '@clerk/nextjs'
+import { useAuth } from '@/context/AuthContext'
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000'
 
@@ -15,7 +15,7 @@ export interface DodoPaymentsOptions {
 }
 
 export function useDodoPayments() {
-  const { getToken } = useAuth()
+  const { token: authToken } = useAuth()
   const [loading, setLoading] = useState(false)
 
   const openCheckout = useCallback(
@@ -29,7 +29,7 @@ export function useDodoPayments() {
     }: DodoPaymentsOptions) => {
       setLoading(true)
 
-      const token = await getToken()
+      const token = authToken || (typeof window !== 'undefined' ? localStorage.getItem('promptex_token') : null)
       if (!token) {
         onError?.('You must be logged in to make a payment.')
         setLoading(false)
@@ -67,7 +67,7 @@ export function useDodoPayments() {
         setLoading(false)
       }
     },
-    [getToken]
+    [authToken]
   )
 
   return { openCheckout, loading }

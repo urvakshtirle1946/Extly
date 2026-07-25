@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@better-auth/infra": "^0.3.7"
+  }
+}

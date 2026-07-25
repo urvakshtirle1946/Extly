@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRazorpay } from '@/hooks/useRazorpay';
-import { useUser } from '@clerk/nextjs';
+import { useAuth } from '@/context/AuthContext';
 import { 
   ChevronRight, 
   ChevronDown, 
@@ -53,7 +53,7 @@ const DEFAULT_USD_TO_INR = 94.98;
 
 export default function BillingPage() {
   const apiFetch = useApiFetch();
-  const { user } = useUser();
+  const { user } = useAuth();
   const [completedTransaction, setCompletedTransaction] = useState<{
     ticketId: string;
     amount: number;
@@ -157,7 +157,7 @@ export default function BillingPage() {
             ticketId: data.payment_id || `TXN-${Date.now()}`,
             amount: priceUSD,
             date: new Date(),
-            cardHolder: user?.fullName || user?.primaryEmailAddress?.emailAddress?.split('@')[0] || 'Promptex Customer',
+            cardHolder: user?.email ? user.email.split('@')[0] : 'Promptex Customer',
             last4Digits: last4.length === 4 ? last4 : '4242',
             barcodeValue: data.order_id || `BAR-${Date.now()}`,
           });

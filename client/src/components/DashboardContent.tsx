@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { useApiFetch } from '@/utils/api'
-import { UserProfile } from '@clerk/nextjs'
 import { 
   Plus, 
   Trash2, 
@@ -684,44 +683,59 @@ export default function DashboardContent() {
           ) : sidebarActiveId === 'billing' ? (
             <BillingPage />
           ) : sidebarActiveId === 'settings' ? (
-            /* Clerk UserProfile Settings Page */
+            /* Custom Account Settings Page */
             <div className="flex-1 overflow-y-auto p-6 md:p-8 relative z-10 max-w-4xl w-full mx-auto flex flex-col gap-6">
               <div className="flex flex-col gap-1">
                 <h2 className="text-xl font-extrabold text-white tracking-tight">Account Settings</h2>
-                <p className="text-xs text-neutral-450 font-medium">Manage your personal profile details, authentication options, and security settings.</p>
+                <p className="text-xs text-neutral-400 font-medium">Manage your personal profile details and active session.</p>
               </div>
-              <div className="flex-1 flex justify-center items-start pt-2">
-                <UserProfile
-                  routing="hash"
-                  appearance={{
-                    variables: {
-                      colorPrimary: '#8b5cf6',
-                      colorBackground: '#0a0a0b',
-                      colorInputBackground: '#0f0f11',
-                      colorInputText: '#f5f5f5',
-                      colorText: '#f5f5f5',
-                      colorTextSecondary: '#a1a1aa',
-                      colorNeutral: '#3f3f46',
-                      borderRadius: '0.75rem',
-                      fontFamily: 'var(--font-geist-sans), system-ui, sans-serif',
-                    },
-                    elements: {
-                      card: 'bg-[#0a0a0b] border border-neutral-900 shadow-2xl shadow-black/40 w-full max-w-full',
-                      navbar: 'border-r border-neutral-900 pr-6',
-                      navbarButton: 'text-neutral-450 hover:text-white transition-colors hover:bg-neutral-900/40 rounded-lg',
-                      navbarButtonActive: 'bg-neutral-900 text-white font-bold',
-                      pageScrollable: 'bg-[#0a0a0b] px-8 py-6',
-                      profileSectionTitle: 'text-white border-b border-neutral-900 pb-2 mb-4 font-bold',
-                      headerTitle: 'text-white font-bold',
-                      headerSubtitle: 'text-neutral-400',
-                      socialButtonsBlockButton: 'border-neutral-800 hover:border-neutral-700 bg-neutral-950 text-white',
-                      formFieldInput: 'bg-[#0f0f11] border-neutral-800 text-white placeholder-neutral-600 focus:border-violet-500',
-                      formFieldLabel: 'text-neutral-400 text-xs font-semibold uppercase tracking-wider',
-                      footerActionLink: 'text-violet-400 hover:text-violet-300',
-                      formButtonPrimary: 'bg-gradient-to-r from-violet-600 to-purple-700 hover:from-violet-700 hover:to-purple-800 text-white font-semibold',
-                    },
-                  }}
-                />
+              
+              <div className="bg-[#0a0a0b] border border-neutral-900 rounded-2xl p-6 md:p-8 shadow-2xl space-y-6">
+                {/* Profile Header */}
+                <div className="flex items-center gap-4 border-b border-neutral-900 pb-6">
+                  <div className="w-14 h-14 rounded-full bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400 font-bold text-xl">
+                    {userInitials}
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-white">{userDisplayName}</h3>
+                    <p className="text-xs text-neutral-400">{user?.email}</p>
+                  </div>
+                </div>
+
+                {/* Account Details */}
+                <div className="space-y-4">
+                  <h4 className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Account Information</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-neutral-950 border border-neutral-900 rounded-xl p-4 space-y-1">
+                      <span className="text-[11px] text-neutral-500 font-semibold uppercase tracking-wider">User ID</span>
+                      <p className="text-xs text-neutral-200 font-mono font-medium truncate">{user?.id}</p>
+                    </div>
+                    <div className="bg-neutral-950 border border-neutral-900 rounded-xl p-4 space-y-1">
+                      <span className="text-[11px] text-neutral-500 font-semibold uppercase tracking-wider">Email Address</span>
+                      <p className="text-xs text-neutral-200 font-medium truncate">{user?.email}</p>
+                    </div>
+                    <div className="bg-neutral-950 border border-neutral-900 rounded-xl p-4 space-y-1">
+                      <span className="text-[11px] text-neutral-500 font-semibold uppercase tracking-wider">Plan</span>
+                      <p className="text-xs text-purple-400 font-bold uppercase tracking-wide">{userPlan}</p>
+                    </div>
+                    <div className="bg-neutral-950 border border-neutral-900 rounded-xl p-4 space-y-1">
+                      <span className="text-[11px] text-neutral-500 font-semibold uppercase tracking-wider">Joined Date</span>
+                      <p className="text-xs text-neutral-200 font-medium">{user?.created_at ? formatDate(user.created_at) : 'N/A'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Session Actions */}
+                <div className="pt-4 border-t border-neutral-900 flex justify-between items-center">
+                  <span className="text-xs text-neutral-500">Log out of your current session on this device</span>
+                  <button
+                    onClick={logout}
+                    className="px-4 py-2 bg-red-600/10 hover:bg-red-600/20 border border-red-500/30 text-red-400 text-xs font-bold rounded-xl transition-colors flex items-center gap-2 cursor-pointer"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    Sign Out
+                  </button>
+                </div>
               </div>
             </div>
           ) : (

@@ -1,7 +1,6 @@
 import 'dotenv/config' 
 import express from 'express'
 import cors from 'cors'
-import { clerkMiddleware } from '@clerk/express'
 import { initDb, db } from './config/db'
 import { authMiddleware } from './middleware/auth.middleware'
 import { 
@@ -58,15 +57,6 @@ app.use(express.json({
   verify: (req: any, res, buf) => {
     req.rawBody = buf
   }
-}))
-
-console.log('[Server] CLERK_PUBLISHABLE_KEY is:', process.env.CLERK_PUBLISHABLE_KEY ? 'FOUND' : 'MISSING')
-console.log('[Server] CLERK_SECRET_KEY is:', process.env.CLERK_SECRET_KEY ? 'FOUND' : 'MISSING')
-
-// Clerk middleware (makes auth available on req.auth for all routes)
-app.use(clerkMiddleware({
-  publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
-  secretKey: process.env.CLERK_SECRET_KEY
 }))
 
 // Health check

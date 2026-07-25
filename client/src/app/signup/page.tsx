@@ -1,10 +1,27 @@
 'use client'
 
-import { SignUp } from '@clerk/nextjs'
+import { useState } from 'react'
 import Link from 'next/link'
 import { PromptexLogo } from '@/components/ui/promptex-logo'
+import { useAuth } from '@/context/AuthContext'
 
 export default function SignupPage() {
+  const { signup } = useAuth()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email) return
+    setIsSubmitting(true)
+    try {
+      await signup(email, password)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#030303] text-slate-100 flex flex-col justify-center items-center px-4 relative overflow-hidden">
       {/* Subtle gradient glow */}
@@ -17,34 +34,58 @@ export default function SignupPage() {
           <PromptexLogo />
         </Link>
 
-        {/* Clerk SignUp component — styled to match dark theme */}
-        <SignUp
-          routing="hash"
-          appearance={{
-            variables: {
-              colorPrimary: '#8b5cf6',
-              colorBackground: '#0a0a0b',
-              colorInputBackground: '#0f0f11',
-              colorInputText: '#f5f5f5',
-              colorText: '#f5f5f5',
-              colorTextSecondary: '#a1a1aa',
-              colorNeutral: '#3f3f46',
-              borderRadius: '0.75rem',
-              fontFamily: 'var(--font-geist-sans), system-ui, sans-serif',
-            },
-            elements: {
-              card: 'bg-[#0a0a0b] border border-neutral-800 shadow-2xl shadow-black/60',
-              headerTitle: 'text-white font-bold',
-              headerSubtitle: 'text-neutral-400',
-              socialButtonsBlockButton: 'border-neutral-800 hover:border-neutral-700 bg-neutral-950 text-white',
-              formFieldInput: 'bg-[#0f0f11] border-neutral-800 text-white placeholder-neutral-600 focus:border-violet-500',
-              formFieldLabel: 'text-neutral-400 text-xs font-semibold uppercase tracking-wider',
-              footerActionLink: 'text-violet-400 hover:text-violet-300',
-              formButtonPrimary: 'bg-gradient-to-r from-violet-600 to-purple-700 hover:from-violet-700 hover:to-purple-800 text-white font-semibold',
-            },
-          }}
-          redirectUrl="/"
-        />
+        {/* Custom Signup Form */}
+        <div className="w-full bg-[#0a0a0b] border border-neutral-800 rounded-2xl p-8 shadow-2xl shadow-black/60 space-y-6">
+          <div className="text-center space-y-1">
+            <h1 className="text-xl font-bold text-white">Create an account</h1>
+            <p className="text-xs text-neutral-400">Start building AI-powered Chrome extensions</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-neutral-400 text-xs font-semibold uppercase tracking-wider block">
+                Email address
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="w-full bg-[#0f0f11] border border-neutral-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-violet-500 transition-colors"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-neutral-400 text-xs font-semibold uppercase tracking-wider block">
+                Password
+              </label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full bg-[#0f0f11] border border-neutral-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-violet-500 transition-colors"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full bg-gradient-to-r from-violet-600 to-purple-700 hover:from-violet-700 hover:to-purple-800 text-white text-xs font-bold uppercase tracking-wider py-3 rounded-xl transition-all cursor-pointer shadow-lg shadow-purple-950/30 disabled:opacity-60"
+            >
+              {isSubmitting ? 'Creating account...' : 'Create Account'}
+            </button>
+          </form>
+
+          <div className="text-center text-xs text-neutral-400 pt-2 border-t border-neutral-900">
+            Already have an account?{' '}
+            <Link href="/login" className="text-violet-400 hover:text-violet-300 font-semibold">
+              Sign in
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   )

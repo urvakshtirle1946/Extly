@@ -94,8 +94,8 @@ export async function initDb() {
     const client = await pool.connect()
     console.log('[Database] Connected successfully!')
     
-    // Dynamic migration to convert users.id and projects.user_id from UUID to VARCHAR(255) for Clerk compatibility
-    console.log('[Database] Running type migrations for Clerk user IDs...')
+    // Dynamic migration to convert users.id and projects.user_id to VARCHAR(255) for user ID compatibility
+    console.log('[Database] Running type migrations for user IDs...')
     await client.query(`
       DO $$
       BEGIN

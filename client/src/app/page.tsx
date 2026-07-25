@@ -10,7 +10,6 @@ import { Code, Loader2, Check, Terminal, Download } from 'lucide-react'
 import { useApiFetch } from '@/utils/api'
 import { PromptexLogo, PromptexLogoMark } from '@/components/ui/promptex-logo'
 import { PromptInputBox } from '@/components/ui/ai-prompt-box'
-import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { CinematicFooter } from '@/components/ui/motion-footer'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import ExpandOnHover from '@/components/ui/expand-cards'
@@ -199,33 +198,23 @@ export default function RootPage() {
             </Link>
           </nav>
 
-          {/* Right Side: Action capsule - clerk aware */}
+          {/* Right Side: Action capsule */}
           <div className="flex items-center gap-2">
-            <SignedOut>
+            {!user ? (
               <Link
                 href="/signup"
                 className="h-9 px-5 flex items-center justify-center bg-white hover:bg-neutral-100 text-black text-[12px] font-extrabold rounded-full transition-colors shadow-lg"
               >
                 Get Started
               </Link>
-            </SignedOut>
-            <SignedIn>
+            ) : (
               <Link 
                 href="/dashboard"
                 className="text-neutral-300 hover:text-white text-[12px] font-bold px-3 transition-colors cursor-pointer"
               >
                 Dashboard
               </Link>
-              <div className="mr-1.5 flex items-center">
-                <UserButton
-                  appearance={{
-                    variables: { colorPrimary: '#8b5cf6' },
-                    elements: { avatarBox: 'w-7 h-7 border border-white/[0.08]' },
-                  }}
-                  afterSignOutUrl="/"
-                />
-              </div>
-            </SignedIn>
+            )}
           </div>
         </header>
       </div>

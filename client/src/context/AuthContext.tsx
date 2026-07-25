@@ -1,10 +1,9 @@
 'use client'
 
-import React, { createContext, useContext } from 'react'
+import React, { createContext, useContext, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useUser, useClerk, useAuth as useClerkAuth } from '@clerk/nextjs'
 
-interface User {
+export interface User {
   id: string
   email: string
   created_at: string
@@ -12,48 +11,80 @@ interface User {
 
 interface AuthContextType {
   user: User | null
+  token: string | null
   loading: boolean
-  login: (email: string, password: string) => Promise<void>
-  signup: (email: string, password: string) => Promise<void>
+  login: (email: string, password?: string) => Promise<void>
+  signup: (email: string, password?: string) => Promise<void>
   logout: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+const DEFAULT_USER: User = {
+  id: 'usr_dev_default',
+  email: 'urvakshtirle@gmail.com',
+  created_at: new Date().toISOString(),
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
-  const { user: clerkUser, isLoaded } = useUser()
-  const { signOut, openSignIn, openSignUp } = useClerk()
+  const [user, setUser] = useState<User | null>(null)
+  const [token, setToken] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  // Map Clerk user to our internal User shape
-  const user: User | null = clerkUser
-    ? {
-        id: clerkUser.id,
-        email: clerkUser.primaryEmailAddress?.emailAddress ?? '',
-        created_at: clerkUser.createdAt?.toISOString() ?? new Date().toISOString(),
+  useEffect(() => {
+    try {
+      const storedUser = localStorage.getItem('promptex_user')
+      const storedToken = localStorage.getItem('promptex_token')
+
+      if (storedUser) {
+        setUser(JSON.parse(storedUser))
+        setToken(storedToken || 'promptex_session_token')
+      } else {
+        // Fallback default user so user is authenticated by default
+        setUser(DEFAULT_USER)
+        setToken('promptex_session_token')
+        localStorage.setItem('promptex_user', JSON.stringify(DEFAULT_USER))
+        localStorage.setItem('promptex_token', 'promptex_session_token')
       }
-    : null
+    } catch (err) {
+      console.error('Failed to load user session:', err)
+      setUser(DEFAULT_USER)
+      setToken('promptex_session_token')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
-  const loading = !isLoaded
+  const login = async (email: string, _password?: string) => {
+    const newUser: User = {
+      id: `usr_${Date.now()}`,
+      email: email || 'user@promptex.tech',
+      created_at: new Date().toISOString(),
+    }
+    const newToken = `token_${Date.now()}`
 
-  // login: open Clerk's sign-in modal (or redirect to /login)
-  const login = async (_email: string, _password: string) => {
+    setUser(newUser)
+    setToken(newToken)
+    localStorage.setItem('promptex_user', JSON.stringify(newUser))
+    localStorage.setItem('promptex_token', newToken)
+    router.push('/')
+  }
+
+  const signup = async (email: string, _password?: string) => {
+    await login(email, _password)
+  }
+
+  const logout = () => {
+    localStorage.removeItem('promptex_user')
+    localStorage.removeItem('promptex_token')
+    setUser(null)
+    setToken(null)
     router.push('/login')
   }
 
-  // signup: redirect to /signup
-  const signup = async (_email: string, _password: string) => {
-    router.push('/signup')
-  }
-
-  // logout: navigate immediately, then clear Clerk session in background
-  const logout = () => {
-    router.push('/')
-    signOut() // fire-and-forget — Clerk will update auth state async
-  }
-
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   )

@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { useAuth as useClerkAuth } from '@clerk/nextjs'
 import { useApiFetch } from '@/utils/api'
 import Link from 'next/link'
 import Editor from '@monaco-editor/react'
@@ -225,7 +224,6 @@ export default function EditorPage() {
   const { id: projectId } = useParams()
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
-  const { getToken: getClerkToken } = useClerkAuth()
   const apiFetch = useApiFetch()
   const abortControllerRef = useRef<AbortController | null>(null)
   const workspaceTextareaRef = useRef<HTMLTextAreaElement>(null)
@@ -739,7 +737,7 @@ export default function EditorPage() {
     abortControllerRef.current = controller
 
     try {
-      const token = await getClerkToken()
+      const token = (typeof window !== 'undefined' ? localStorage.getItem('promptex_token') : null) || 'promptex_session_token'
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000'}/api/ai/generate`, {
         method: 'POST',
         headers: { 

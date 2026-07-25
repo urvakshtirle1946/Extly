@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback } from 'react'
-import { useAuth } from '@clerk/nextjs'
+import { useAuth } from '@/context/AuthContext'
 
 declare global {
   interface Window {
@@ -39,7 +39,7 @@ export interface RazorpayOptions {
 }
 
 export function useRazorpay() {
-  const { getToken } = useAuth()
+  const { token: authToken } = useAuth()
 
   const openCheckout = useCallback(
     async ({
@@ -61,7 +61,7 @@ export function useRazorpay() {
       }
 
       // 2. Get auth token
-      const token = await getToken()
+      const token = authToken || (typeof window !== 'undefined' ? localStorage.getItem('promptex_token') : null)
       if (!token) {
         onError?.('You must be logged in to make a payment.')
         return
@@ -152,7 +152,7 @@ export function useRazorpay() {
 
       rzp.open()
     },
-    [getToken]
+    [authToken]
   )
 
   return { openCheckout }
