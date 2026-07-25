@@ -41,16 +41,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(JSON.parse(storedUser))
         setToken(storedToken || 'promptex_session_token')
       } else {
-        // Fallback default user so user is authenticated by default
-        setUser(DEFAULT_USER)
-        setToken('promptex_session_token')
-        localStorage.setItem('promptex_user', JSON.stringify(DEFAULT_USER))
-        localStorage.setItem('promptex_token', 'promptex_session_token')
+        setUser(null)
+        setToken(null)
       }
     } catch (err) {
       console.error('Failed to load user session:', err)
-      setUser(DEFAULT_USER)
-      setToken('promptex_session_token')
+      setUser(null)
+      setToken(null)
     } finally {
       setLoading(false)
     }
