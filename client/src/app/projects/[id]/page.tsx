@@ -224,7 +224,7 @@ function FileTreeNode({
 export default function EditorPage() {
   const { id: projectId } = useParams()
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const { getToken: getClerkToken } = useClerkAuth()
   const apiFetch = useApiFetch()
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -518,10 +518,18 @@ export default function EditorPage() {
       }
     }
 
-    if (projectId && user) {
+    if (authLoading) return
+
+    if (!user) {
+      setLoading(false)
+      router.push('/login')
+      return
+    }
+
+    if (projectId) {
       initProject()
     }
-  }, [projectId, user])
+  }, [projectId, user, authLoading])
 
   // Scroll chat & logs to bottom
   useEffect(() => {

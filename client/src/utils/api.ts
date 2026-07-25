@@ -36,10 +36,17 @@ export function useApiFetch() {
       headers.set('Content-Type', 'application/json')
     }
 
-    const response = await fetch(`${BACKEND_URL}${path}`, {
-      ...options,
-      headers,
-    })
+    let response: Response
+    try {
+      response = await fetch(`${BACKEND_URL}${path}`, {
+        ...options,
+        headers,
+      })
+    } catch {
+      throw new Error(
+        `Cannot reach the backend at ${BACKEND_URL}. Make sure the server is running and NEXT_PUBLIC_BACKEND_URL is set correctly.`
+      )
+    }
 
     if (!response.ok) {
       // If 401, token may have expired early — clear cache and retry once

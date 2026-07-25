@@ -203,11 +203,14 @@ document.body.appendChild(div);`
 
 export default function DashboardContent() {
   const router = useRouter()
-  const { user, logout } = useAuth()
+  const { user, logout, loading: authLoading } = useAuth()
+  const apiFetch = useApiFetch()
   const [projects, setProjects] = useState<Project[]>([])
   const [userPlan, setUserPlan] = useState('free')
 
   useEffect(() => {
+    if (!user) return
+
     async function getPlan() {
       try {
         const data = await apiFetch('/api/usage')
@@ -217,7 +220,7 @@ export default function DashboardContent() {
       }
     }
     getPlan()
-  }, [])
+  }, [user, apiFetch])
 
   const [loading, setLoading] = useState(true)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -262,9 +265,6 @@ export default function DashboardContent() {
       setSidebarActiveId(id)
     }
   }
-
-  // Populate command palette items
-  const apiFetch = useApiFetch()
 
   const commandItems = useMemo(() => {
     const baseItems = [
@@ -314,7 +314,6 @@ export default function DashboardContent() {
     return [...baseItems, ...projectItems]
   }, [projects, router])
 
-  // Fetch projects on mount
   useEffect(() => {
     async function loadProjects() {
       try {
@@ -327,10 +326,16 @@ export default function DashboardContent() {
         setLoading(false)
       }
     }
-    if (user) {
-      loadProjects()
+
+    if (authLoading) return
+
+    if (!user) {
+      setLoading(false)
+      return
     }
-  }, [user])
+
+    loadProjects()
+  }, [user, authLoading, apiFetch])
 
   const handleQuickCreateFromMessage = async (
     message: string,
@@ -339,6 +344,17 @@ export default function DashboardContent() {
     byokApiKey: string = ''
   ) => {
     if (!message.trim()) return
+
+    if (authLoading) {
+      setError('Still signing you in. Please try again in a moment.')
+      return
+    }
+
+    if (!user) {
+      localStorage.setItem('pending_prompt', message)
+      router.push('/signup')
+      return
+    }
 
     if (userPlan !== 'pro' && userPlan !== 'business' && projects.length >= 3) {
       alert('Free tier limit reached: You can only create up to 3 projects. Please upgrade your plan in the Billing section to create more projects.')
@@ -373,7 +389,12 @@ export default function DashboardContent() {
         })
       })
 
-      router.push(`/projects/${project.id}`)
+      const projectId = project?.id || project?.project?.id
+      if (!projectId) {
+        throw new Error('Project was created but no ID was returned. Check that the backend is running.')
+      }
+
+      router.push(`/projects/${projectId}`)
     } catch (err: any) {
       setError(err.message || 'Failed to create project')
       setCreating(false)
@@ -411,6 +432,32 @@ export default function DashboardContent() {
 
   const userDisplayName = user?.email ? user.email.split('@')[0] : 'Developer'
   const userInitials = userDisplayName.substring(0, 2).toUpperCase()
+
+  if (authLoading || creating) {
+    return (
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center space-y-4 select-none">
+        <Loader2 className="w-6 h-6 text-white animate-spin" />
+        <p className="text-white/70 text-xs font-bold uppercase tracking-wider animate-pulse">
+          {creating ? 'Creating your extension workspace...' : 'Loading dashboard...'}
+        </p>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center space-y-4 select-none text-center px-6">
+        <AlertCircle className="w-8 h-8 text-neutral-400" />
+        <p className="text-white text-sm font-semibold">Sign in to start building</p>
+        <button
+          onClick={() => router.push('/login')}
+          className="px-5 py-2.5 bg-white text-black text-xs font-bold rounded-full hover:bg-neutral-100 transition-colors"
+        >
+          Go to Login
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-black text-neutral-100 flex overflow-hidden font-sans relative">
@@ -700,6 +747,12 @@ export default function DashboardContent() {
               
               {/* New AI Prompt Box */}
               <div className="w-full text-left">
+                {error && (
+                  <div className="mb-4 flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span>{error}</span>
+                  </div>
+                )}
                 <PromptInputBox 
                   placeholder="Ask Promptex to create a prototype..."
                   isLoading={creating}
