@@ -1,8 +1,7 @@
 'use client'
 
-import React, { createContext, useContext } from 'react'
-import { useRouter } from 'next/navigation'
-import { authClient } from '@/lib/auth-client'
+import React, { createContext, useContext, useEffect, useState } from 'react'
+import { useKindeBrowserClient } from '@kinde-oss/kinde-auth-nextjs'
 
 export interface User {
   id: string
@@ -14,53 +13,66 @@ interface AuthContextType {
   user: User | null
   token: string | null
   loading: boolean
-  login: (email: string, password?: string) => Promise<void>
-  signup: (email: string, password?: string) => Promise<void>
+  login: (email?: string, password?: string) => Promise<void>
+  signup: (email?: string, password?: string) => Promise<void>
   logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const router = useRouter()
-  const { data: session, isPending, refetch } = authClient.useSession()
+  const { user: kindeUser, isLoading, getToken } = useKindeBrowserClient()
+  const [token, setToken] = useState<string | null>(null)
 
-  const user = session?.user
+  useEffect(() => {
+    async function fetchToken() {
+      if (kindeUser) {
+        try {
+          const t = await getToken()
+          setToken(t || null)
+        } catch (err) {
+          console.error('Failed to retrieve Kinde token:', err)
+          setToken(null)
+        }
+      } else {
+        setToken(null)
+      }
+    }
+    fetchToken()
+  }, [kindeUser, getToken])
+
+  const user: User | null = kindeUser
     ? {
-        id: session.user.id,
-        email: session.user.email,
-        created_at: String(session.user.createdAt),
+        id: kindeUser.id || 'usr_kinde',
+        email: kindeUser.email || '',
+        created_at: new Date().toISOString(),
       }
     : null
-  const token = session?.session.token ?? null
 
-  const login = async (email: string, password?: string) => {
-    const { error } = await authClient.signIn.email({ email, password: password || '' })
-    if (error) throw new Error(error.message || 'Unable to sign in.')
-    await refetch()
-    router.push('/')
+  const login = async () => {
+    window.location.href = '/api/auth/login'
   }
 
-  const signup = async (email: string, password?: string) => {
-    const { error } = await authClient.signUp.email({
-      email,
-      password: password || '',
-      name: email.split('@')[0] || 'Promptex user',
-    })
-    if (error) throw new Error(error.message || 'Unable to create your account.')
-    await refetch()
-    router.push('/')
+  const signup = async () => {
+    window.location.href = '/api/auth/register'
   }
 
   const logout = async () => {
-    const { error } = await authClient.signOut()
-    if (error) throw new Error(error.message || 'Unable to sign out.')
-    await refetch()
-    router.push('/login')
+    window.location.href = '/api/auth/logout'
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, loading: isPending, login, signup, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        loading: Boolean(isLoading),
+        login,
+        signup,
+        logout,
+
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )
