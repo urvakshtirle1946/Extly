@@ -87,11 +87,12 @@ export default function RootPage() {
     if (!message.trim()) return
 
     if (!user) {
-      // Not logged in — save prompt and redirect to signup
+      // Not logged in — save prompt and redirect to Kinde signup directly
       localStorage.setItem('pending_prompt', message)
-      router.push('/signup')
+      window.location.href = '/api/auth/register'
       return
     }
+
 
     // Logged in — create project immediately and navigate to editor
     setCreatingProject(true)
@@ -201,13 +202,14 @@ export default function RootPage() {
           {/* Right Side: Action capsule */}
           <div className="flex items-center gap-2">
             {!user ? (
-              <Link
-                href="/signup"
+              <a
+                href="/api/auth/register"
                 className="h-9 px-5 flex items-center justify-center bg-white hover:bg-neutral-100 text-black text-[12px] font-extrabold rounded-full transition-colors shadow-lg"
               >
                 Get Started
-              </Link>
+              </a>
             ) : (
+
               <Link 
                 href="/dashboard"
                 className="text-neutral-300 hover:text-white text-[12px] font-bold px-3 transition-colors cursor-pointer"
@@ -318,12 +320,12 @@ export default function RootPage() {
                 </ul>
               </div>
               
-              <Link 
-                href="/signup" 
-                className="mt-8 w-full py-3 bg-[#0d0d0e]/80 hover:bg-neutral-900 border border-white/[0.08] hover:border-white/[0.15] text-white text-center font-bold rounded-full text-xs transition-all duration-200"
+              <a 
+                href="/api/auth/register" 
+                className="mt-8 w-full py-3 bg-[#0d0d0e]/80 hover:bg-neutral-900 border border-white/[0.08] hover:border-white/[0.15] text-white text-center font-bold rounded-full text-xs transition-all duration-200 block"
               >
                 Get Started
-              </Link>
+              </a>
             </div>
 
             {/* Card 2: Standard Plan */}
@@ -372,12 +374,12 @@ export default function RootPage() {
                 </ul>
               </div>
               
-              <Link 
-                href={user ? "/dashboard?tab=billing" : "/signup"} 
-                className="mt-8 w-full py-3 bg-white hover:bg-neutral-100 text-black text-center font-bold rounded-full text-xs transition-all duration-205 shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+              <a 
+                href={user ? "/dashboard?tab=billing" : "/api/auth/register"} 
+                className="mt-8 w-full py-3 bg-white hover:bg-neutral-100 text-black text-center font-bold rounded-full text-xs transition-all duration-205 shadow-[0_0_20px_rgba(255,255,255,0.15)] block"
               >
                 {user ? "Upgrade Plan" : "Get Started"}
-              </Link>
+              </a>
             </div>
 
             {/* Card 3: Pro Plan */}
@@ -432,12 +434,12 @@ export default function RootPage() {
                 </ul>
               </div>
               
-              <Link 
-                href={user ? "/dashboard?tab=billing" : "/signup"} 
-                className="mt-8 w-full py-3 bg-[#0d0d0e]/80 hover:bg-neutral-900 border border-white/[0.08] hover:border-white/[0.15] text-white text-center font-bold rounded-full text-xs transition-all duration-200"
+              <a 
+                href={user ? "/dashboard?tab=billing" : "/api/auth/register"} 
+                className="mt-8 w-full py-3 bg-[#0d0d0e]/80 hover:bg-neutral-900 border border-white/[0.08] hover:border-white/[0.15] text-white text-center font-bold rounded-full text-xs transition-all duration-200 block"
               >
                 {user ? "Upgrade Plan" : "Get Started"}
-              </Link>
+              </a>
             </div>
           </div>
         </div>
