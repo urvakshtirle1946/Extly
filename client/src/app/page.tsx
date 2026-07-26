@@ -12,9 +12,10 @@ import { PromptexLogo, PromptexLogoMark } from '@/components/ui/promptex-logo'
 import { PromptInputBox } from '@/components/ui/ai-prompt-box'
 import { CinematicFooter } from '@/components/ui/motion-footer'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
-import ExpandOnHover from '@/components/ui/expand-cards'
+import { ScrollVideoPlayer } from '@/components/ui/scroll-video-player'
 
 export default function RootPage() {
+
   const { user, loading } = useAuth()
   const router = useRouter()
   const apiFetch = useApiFetch()
@@ -257,7 +258,7 @@ export default function RootPage() {
           {/* Glow halo */}
           <div className="absolute inset-x-0 -top-8 h-32 bg-white/[0.03] blur-3xl rounded-full pointer-events-none" />
           <div className="relative rounded-2xl overflow-hidden py-4">
-            <ExpandOnHover />
+            <ScrollVideoPlayer />
           </div>
         </div>
       </section>
