@@ -1,8 +1,19 @@
 import { betterAuth } from "better-auth";
 import { dash } from "@better-auth/infra";
+import { authDatabase } from "@/lib/auth-db";
+
+const secret =
+  process.env.BETTER_AUTH_SECRET && process.env.BETTER_AUTH_SECRET.length >= 32
+    ? process.env.BETTER_AUTH_SECRET
+    : "promptex_better_auth_secret_key_2026_default_secret_32chars";
+
 
 export const auth = betterAuth({
-  secret: process.env.BETTER_AUTH_SECRET || "promptex_better_auth_secret_key_2026",
+  secret,
+  database: {
+    db: authDatabase,
+    type: "postgres",
+  },
   // Keep this host identical to the URL registered with Better Auth Dash.
   // Dash does not follow redirects when checking the integration.
   baseURL:
@@ -17,5 +28,8 @@ export const auth = betterAuth({
   ],
   plugins: [
     dash()
-  ]
+  ],
+  emailAndPassword: {
+    enabled: true,
+  },
 });

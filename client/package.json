@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "auth:migrate": "npx auth@latest migrate"
   },
   "dependencies": {
     "@better-auth/infra": "^0.3.7",
@@ -32,9 +33,11 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.42.1",
     "gsap": "^3.15.0",
+    "kysely": "^0.29.4",
     "lucide-react": "^1.22.0",
     "motion": "^12.42.2",
     "next": "14.2.35",
+    "pg": "^8.22.0",
     "posthog-js": "^1.398.0",
     "react": "^18",
     "react-dom": "^18",
@@ -45,6 +48,7 @@
   "devDependencies": {
     "@tailwindcss/container-queries": "^0.1.1",
     "@types/node": "^20",
+    "@types/pg": "^8.20.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",

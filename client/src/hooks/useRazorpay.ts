@@ -61,7 +61,7 @@ export function useRazorpay() {
       }
 
       // 2. Get auth token
-      const token = authToken || (typeof window !== 'undefined' ? localStorage.getItem('promptex_token') : null)
+      const token = authToken
       if (!token) {
         onError?.('You must be logged in to make a payment.')
         return

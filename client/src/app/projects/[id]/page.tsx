@@ -223,7 +223,7 @@ function FileTreeNode({
 export default function EditorPage() {
   const { id: projectId } = useParams()
   const router = useRouter()
-  const { user, loading: authLoading } = useAuth()
+  const { user, token, loading: authLoading } = useAuth()
   const apiFetch = useApiFetch()
   const abortControllerRef = useRef<AbortController | null>(null)
   const workspaceTextareaRef = useRef<HTMLTextAreaElement>(null)
@@ -737,7 +737,7 @@ export default function EditorPage() {
     abortControllerRef.current = controller
 
     try {
-      const token = (typeof window !== 'undefined' ? localStorage.getItem('promptex_token') : null) || 'promptex_session_token'
+      if (!token) throw new Error('Your session has expired. Please sign in again.')
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000'}/api/ai/generate`, {
         method: 'POST',
         headers: { 

@@ -1,7 +1,8 @@
 'use client'
 
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext } from 'react'
 import { useRouter } from 'next/navigation'
+import { authClient } from '@/lib/auth-client'
 
 export interface User {
   id: string
@@ -15,73 +16,51 @@ interface AuthContextType {
   loading: boolean
   login: (email: string, password?: string) => Promise<void>
   signup: (email: string, password?: string) => Promise<void>
-  logout: () => void
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const DEFAULT_USER: User = {
-  id: 'usr_dev_default',
-  email: 'urvakshtirle@gmail.com',
-  created_at: new Date().toISOString(),
-}
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
-  const [user, setUser] = useState<User | null>(null)
-  const [token, setToken] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { data: session, isPending, refetch } = authClient.useSession()
 
-  useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem('promptex_user')
-      const storedToken = localStorage.getItem('promptex_token')
-
-      if (storedUser) {
-        setUser(JSON.parse(storedUser))
-        setToken(storedToken || 'promptex_session_token')
-      } else {
-        setUser(null)
-        setToken(null)
+  const user = session?.user
+    ? {
+        id: session.user.id,
+        email: session.user.email,
+        created_at: String(session.user.createdAt),
       }
-    } catch (err) {
-      console.error('Failed to load user session:', err)
-      setUser(null)
-      setToken(null)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+    : null
+  const token = session?.session.token ?? null
 
-  const login = async (email: string, _password?: string) => {
-    const newUser: User = {
-      id: `usr_${Date.now()}`,
-      email: email || 'user@promptex.tech',
-      created_at: new Date().toISOString(),
-    }
-    const newToken = `token_${Date.now()}`
-
-    setUser(newUser)
-    setToken(newToken)
-    localStorage.setItem('promptex_user', JSON.stringify(newUser))
-    localStorage.setItem('promptex_token', newToken)
+  const login = async (email: string, password?: string) => {
+    const { error } = await authClient.signIn.email({ email, password: password || '' })
+    if (error) throw new Error(error.message || 'Unable to sign in.')
+    await refetch()
     router.push('/')
   }
 
-  const signup = async (email: string, _password?: string) => {
-    await login(email, _password)
+  const signup = async (email: string, password?: string) => {
+    const { error } = await authClient.signUp.email({
+      email,
+      password: password || '',
+      name: email.split('@')[0] || 'Promptex user',
+    })
+    if (error) throw new Error(error.message || 'Unable to create your account.')
+    await refetch()
+    router.push('/')
   }
 
-  const logout = () => {
-    localStorage.removeItem('promptex_user')
-    localStorage.removeItem('promptex_token')
-    setUser(null)
-    setToken(null)
+  const logout = async () => {
+    const { error } = await authClient.signOut()
+    if (error) throw new Error(error.message || 'Unable to sign out.')
+    await refetch()
     router.push('/login')
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, token, loading: isPending, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   )

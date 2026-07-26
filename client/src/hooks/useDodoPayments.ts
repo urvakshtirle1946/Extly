@@ -29,7 +29,7 @@ export function useDodoPayments() {
     }: DodoPaymentsOptions) => {
       setLoading(true)
 
-      const token = authToken || (typeof window !== 'undefined' ? localStorage.getItem('promptex_token') : null)
+      const token = authToken
       if (!token) {
         onError?.('You must be logged in to make a payment.')
         setLoading(false)

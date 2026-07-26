@@ -11,7 +11,7 @@ export function useApiFetch() {
   const { token: authContextToken } = useAuth()
 
   const apiFetch = useCallback(async (path: string, options: RequestInit = {}) => {
-    const token = authContextToken || (typeof window !== 'undefined' ? localStorage.getItem('promptex_token') : null)
+    const token = authContextToken
 
     const headers = new Headers(options.headers)
     if (token) {
@@ -57,12 +57,12 @@ export function useApiFetch() {
 }
 
 /**
- * Standalone apiFetch for use outside React components.
- * Reads token from localStorage fallback (SSR-safe).
- * For client components, prefer useApiFetch() hook.
+ * Standalone apiFetch for use outside React components. Callers must provide
+ * the active Better Auth session token. Client components should prefer
+ * useApiFetch().
  */
 export async function apiFetch(path: string, options: RequestInit = {}, token?: string | null) {
-  const resolvedToken = token ?? (typeof window !== 'undefined' ? localStorage.getItem('promptex_token') : null)
+  const resolvedToken = token ?? null
 
   const headers = new Headers(options.headers)
   if (resolvedToken) {

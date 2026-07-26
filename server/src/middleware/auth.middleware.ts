@@ -11,19 +11,31 @@ export interface AuthenticatedRequest extends Request {
 export async function authMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization
 
-  let userId = 'usr_dev_default'
-  let userEmail = 'urvakshtirle@gmail.com'
-
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.split(' ')[1]
-    if (token && token.trim().length > 0) {
-      userId = token
-    }
+  if (!authHeader?.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Authentication required' })
   }
 
+  const token = authHeader.slice('Bearer '.length).trim()
+  if (!token) return res.status(401).json({ error: 'Authentication required' })
+
   try {
-    // 1. First check if user exists by ID
-    const userById = await db.query('SELECT id, email FROM users WHERE id = $1', [userId])
+    // Better Auth stores opaque session tokens in its own `session` table.
+    // Validate that the token is both known and unexpired before associating it
+    // with the app's existing `users` record.
+    const authSession = await db.query(
+      `SELECT u.id, u.email
+       FROM "session" s
+       INNER JOIN "user" u ON u.id = s."userId"
+       WHERE s.token = $1 AND s."expiresAt" > NOW()`,
+      [token]
+    )
+
+    if (authSession.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid or expired session' })
+    }
+
+    const authUser = authSession.rows[0]
+    const userById = await db.query('SELECT id, email FROM users WHERE id = $1', [authUser.id])
     
     if (userById.rows.length > 0) {
       req.user = {
@@ -33,8 +45,8 @@ export async function authMiddleware(req: AuthenticatedRequest, res: Response, n
       return next()
     }
 
-    // 2. If not found by ID, check if default email user exists
-    const userByEmail = await db.query('SELECT id, email FROM users WHERE email = $1', [userEmail])
+    // Preserve projects created by a pre-Better-Auth account with the same email.
+    const userByEmail = await db.query('SELECT id, email FROM users WHERE email = $1', [authUser.email])
 
     if (userByEmail.rows.length > 0) {
       req.user = {
@@ -44,27 +56,23 @@ export async function authMiddleware(req: AuthenticatedRequest, res: Response, n
       return next()
     }
 
-    // 3. If neither exists, insert a new user safely
+    // Create the app profile the first time a verified Better Auth user calls
+    // the API. Passwords are managed only by Better Auth.
     await db.query(
       `INSERT INTO users (id, email, password_hash)
        VALUES ($1, $2, '')
        ON CONFLICT DO NOTHING`,
-      [userId, `${userId}@promptex.tech`]
+      [authUser.id, authUser.email]
     )
 
     req.user = {
-      id: userId,
-      email: `${userId}@promptex.tech`
+      id: authUser.id,
+      email: authUser.email
     }
 
     next()
   } catch (error) {
-    console.error('[Auth] User resolution warning:', error)
-    // Fallback so the request never crashes with 500
-    req.user = {
-      id: userId,
-      email: userEmail
-    }
-    next()
+    console.error('[Auth] Session validation failed:', error)
+    return res.status(500).json({ error: 'Unable to validate session' })
   }
 }
