@@ -19,6 +19,9 @@ export default function LoginPage() {
           <div className="pt-2">
             <LoginLink 
               postLoginRedirectURL="/dashboard"
+              authUrlParams={{
+                prompt: 'select_account'
+              }}
               className="w-full inline-block bg-gradient-to-r from-violet-600 to-purple-700 hover:from-violet-700 hover:to-purple-800 text-white text-xs font-bold uppercase tracking-wider py-3.5 rounded-xl transition-all cursor-pointer shadow-lg shadow-purple-950/30"
             >
               Sign In with Kinde

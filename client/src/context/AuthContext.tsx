@@ -66,12 +66,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     : null
 
   const login = async () => {
-    window.location.href = '/api/auth/login'
+    window.location.href = '/api/auth/login?prompt=select_account'
   }
 
   const signup = async () => {
-    window.location.href = '/api/auth/register'
+    window.location.href = '/api/auth/register?prompt=select_account'
   }
+
 
   const logout = async () => {
     window.location.href = '/api/auth/logout'
