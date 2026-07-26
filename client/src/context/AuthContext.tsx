@@ -21,25 +21,41 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { user: kindeUser, isLoading, getToken } = useKindeBrowserClient()
-  const [token, setToken] = useState<string | null>(null)
+  const { 
+    user: kindeUser, 
+    isLoading, 
+    getToken, 
+    accessTokenRaw, 
+    idTokenRaw,
+    getAccessTokenRaw,
+    getIdTokenRaw 
+  } = useKindeBrowserClient()
+
+  const [asyncToken, setAsyncToken] = useState<string | null>(null)
+
+  // Direct synchronous token retrieval from Kinde state
+  const directToken = 
+    accessTokenRaw || 
+    idTokenRaw || 
+    (getAccessTokenRaw ? getAccessTokenRaw() : null) || 
+    (getIdTokenRaw ? getIdTokenRaw() : null)
+
+  const token = directToken || asyncToken
 
   useEffect(() => {
     async function fetchToken() {
-      if (kindeUser) {
+      if (kindeUser && !directToken) {
         try {
           const t = await getToken()
-          setToken(t || null)
+          setAsyncToken(t || null)
         } catch (err) {
           console.error('Failed to retrieve Kinde token:', err)
-          setToken(null)
+          setAsyncToken(null)
         }
-      } else {
-        setToken(null)
       }
     }
     fetchToken()
-  }, [kindeUser, getToken])
+  }, [kindeUser, directToken, getToken])
 
   const user: User | null = kindeUser
     ? {
@@ -61,16 +77,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     window.location.href = '/api/auth/logout'
   }
 
+  // Treat as loading if Kinde is loading OR if user exists but token has not resolved yet
+  const authLoading = Boolean(isLoading) || (Boolean(kindeUser) && !token)
+
   return (
     <AuthContext.Provider
       value={{
         user,
         token,
-        loading: Boolean(isLoading),
+        loading: authLoading,
         login,
         signup,
         logout,
-
       }}
     >
       {children}
