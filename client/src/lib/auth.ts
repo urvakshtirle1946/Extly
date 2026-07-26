@@ -27,7 +27,9 @@ export const auth = betterAuth({
     "http://localhost:4000"
   ],
   plugins: [
-    dash()
+    dash({
+      apiKey: process.env.BETTER_AUTH_API_KEY,
+    })
   ],
   emailAndPassword: {
     enabled: true,
