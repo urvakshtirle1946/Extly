@@ -312,9 +312,38 @@ chrome.tabs.sendMessage(tabId, message, (response) => {
 });
 
 ═══════════════════════════════════════
-UI SYSTEM — DEFAULT FOR ALL EXTENSIONS
+DESIGN SYSTEM — STRICT REQUIREMENTS (NON NEGOTIABLE)
 ═══════════════════════════════════════
-Every extension popup must use this exact default design system:
+Every extension generated MUST strictly follow this design system:
+
+1. COMPONENTS & SHADCN UI PATTERNS:
+   - Use clean, minimal shadcn-style component semantics (Button, Card, Alert, Input, Select, Badge, Table, Tabs, Sheet, Dropdown, Toast, Skeleton, etc.).
+   - Buttons: use shadcn variants (default, outline, ghost, destructive) purposefully — NOT just filled black buttons everywhere.
+   - Forms: real validation, clear field labels, and proper input focus states.
+   - States: Handle empty states, loading states (using Skeleton/spinner), and error states using clean Alert components.
+
+2. COLOR PALETTE — STRICTLY BLACK, WHITE & ZINC GRAYS ONLY:
+   - Palette: ONLY black (#000000 / #09090b), white (#ffffff), and zinc grays (zinc-50 through zinc-950).
+   - STRICTLY NO blue accents, NO purple gradients, NO default Tailwind indigo.
+   - Light-mode-first by default (clean white/zinc background, crisp black text, zinc-200 borders) unless dark mode is explicitly requested.
+
+3. DO NOT USE GENERIC "AI APP" LOOK:
+   - NO purple-to-blue gradients.
+   - NO glowing card borders or floating blob backgrounds.
+   - NO overused rounded-full badges everywhere.
+   - NO emoji-as-icons. Use lucide-react SVGs or clean inline SVGs, sized consistently (14px–18px), never oversized.
+
+4. TYPOGRAPHY:
+   - Distinctive font pairing (e.g. tighter sans / Geist / Inter for headings, clean system sans for body).
+   - Vary font weight (400, 500, 600, 700) and font sizes deliberately — avoid uniform font-sizing.
+
+5. LAYOUT & MICRO-INTERACTIONS:
+   - Real information hierarchy, generous whitespace, intentional grid layout (not centered-card-on-gradient-background).
+   - Add subtle, purposeful micro-interactions (hover states, smooth transitions) — NO flashy animations.
+
+6. FUNCTIONALITY REQUIREMENTS:
+   - Fully wire up all state and data (NO placeholder dummy buttons that do nothing).
+   - Provide realistic mock data or real extension storage data.
 
 popup.html structure:
 <!DOCTYPE html>
@@ -327,21 +356,18 @@ popup.html structure:
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --bg: #0f0f11;
-      --surface: #1a1a1f;
-      --surface-2: #222228;
-      --border: rgba(255,255,255,0.08);
-      --border-hover: rgba(255,255,255,0.15);
-      --text: #f4f4f5;
+      --bg: #ffffff;
+      --surface: #fafafa;
+      --surface-2: #f4f4f5;
+      --border: #e4e4e7;
+      --border-hover: #d4d4d8;
+      --text: #09090b;
       --text-muted: #71717a;
-      --text-dim: #52525b;
-      --accent: #6366f1;
-      --accent-hover: #818cf8;
-      --accent-glow: rgba(99,102,241,0.25);
-      --success: #22c55e;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --radius: 10px;
+      --text-dim: #a1a1aa;
+      --accent: #09090b;
+      --accent-hover: #27272a;
+      --accent-text: #ffffff;
+      --radius: 8px;
       --radius-sm: 6px;
     }
 
@@ -356,7 +382,6 @@ popup.html structure:
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      animation: fadeUp 0.25s ease;
     }
 
     @keyframes fadeUp {
