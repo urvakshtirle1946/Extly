@@ -260,13 +260,25 @@ export async function handleGetUsage(req: AuthenticatedRequest, res: Response) {
     const todayResult = await db.query(todayQueryText, [userId])
     const usedToday = todayResult.rows[0]?.count || 0
 
-    // 3. Fetch user plan and credits
+    // 3. Reset daily free credits at midnight UTC for free plan users
+    await db.query(
+      `UPDATE users 
+       SET used_credits = 0, 
+           last_credit_reset = CURRENT_TIMESTAMP
+       WHERE id = $1 
+         AND plan = 'free'
+         AND (last_credit_reset IS NULL OR last_credit_reset < DATE_TRUNC('day', NOW() AT TIME ZONE 'UTC'))`,
+      [userId]
+    )
+
+    // 4. Fetch user plan and credits
     const userResult = await db.query(
       'SELECT plan, total_credits, used_credits FROM users WHERE id = $1',
       [userId]
     )
     const plan = userResult.rows[0]?.plan || 'free'
-    const total = userResult.rows[0]?.total_credits ?? 10
+    let total = userResult.rows[0]?.total_credits ?? 10
+    if (total <= 0) total = 10
     const used = userResult.rows[0]?.used_credits ?? 0
     const remaining = Math.max(0, total - used)
 

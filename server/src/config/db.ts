@@ -139,6 +139,7 @@ export async function initDb() {
     await client.query(`
       ALTER TABLE users ADD COLUMN IF NOT EXISTS total_credits INTEGER DEFAULT 10;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS used_credits INTEGER DEFAULT 0;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS last_credit_reset TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
     `)
     // BYOK workspace columns
     await client.query(`

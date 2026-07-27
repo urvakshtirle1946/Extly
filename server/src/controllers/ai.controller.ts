@@ -64,31 +64,49 @@ export async function handleGenerate(req: AuthenticatedRequest, res: Response) {
         return res.status(400).json({ error: 'No API key configured for this BYOK workspace.' })
       }
     } else {
-      // Standard workspace — ensure user record exists and check credits
+      // Standard workspace — ensure user record exists cleanly without breaking UNIQUE(email) constraint
       await db.query(
-        `INSERT INTO users (id, email, password_hash, plan, total_credits, used_credits)
-         VALUES ($1, '', '', 'free', 10, 0)
-         ON CONFLICT (id) DO UPDATE SET
-           total_credits = CASE 
-             WHEN users.total_credits = 0 THEN 10 
-             ELSE users.total_credits 
-           END`,
+        `INSERT INTO users (id, email, password_hash, plan, total_credits, used_credits, last_credit_reset)
+         VALUES ($1, $2, '', 'free', 10, 0, CURRENT_TIMESTAMP)
+         ON CONFLICT (id) DO NOTHING`,
+        [userId, req.user?.email || `${userId}@promptex.tech`]
+      )
+
+      // Reset daily free credits at midnight UTC for free plan users
+      await db.query(
+        `UPDATE users 
+         SET used_credits = 0, 
+             last_credit_reset = CURRENT_TIMESTAMP
+         WHERE id = $1 
+           AND plan = 'free'
+           AND (last_credit_reset IS NULL OR last_credit_reset < DATE_TRUNC('day', NOW() AT TIME ZONE 'UTC'))`,
         [userId]
       )
 
       const userResult = await db.query(
-        'SELECT total_credits, used_credits FROM users WHERE id = $1',
+        'SELECT plan, total_credits, used_credits FROM users WHERE id = $1',
         [userId]
       )
-      const total = userResult.rows[0]?.total_credits ?? 10
-      const used = userResult.rows[0]?.used_credits ?? 0
-      const remaining = total - used
 
-      console.log(`[Credits] user=${userId} used=${used} total=${total} remaining=${remaining}`)
+      const userPlan = userResult.rows[0]?.plan || 'free'
+      let total = userResult.rows[0]?.total_credits ?? 10
+      if (total <= 0) {
+        total = 10
+        await db.query('UPDATE users SET total_credits = 10 WHERE id = $1', [userId])
+      }
+
+      const used = userResult.rows[0]?.used_credits ?? 0
+      const remaining = Math.max(0, total - used)
+
+      console.log(`[Credits] user=${userId} plan=${userPlan} used=${used} total=${total} remaining=${remaining}`)
 
       if (remaining <= 0) {
+        const errorMsg = userPlan === 'free'
+          ? 'You have reached your 10 free daily credits for today. Credits reset at midnight UTC, or you can top up credits to keep building.'
+          : 'You have used all your account credits. Please top up your credits to continue building.'
+
         return res.status(403).json({
-          error: 'Daily build credits limit reached. Please upgrade your plan.',
+          error: errorMsg,
           remaining: 0,
           total
         })
