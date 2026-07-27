@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { useApiFetch } from '@/utils/api'
+import { MobiusLoopIcon } from '@/components/ui/mobius-loop-icon'
 import { 
   Plus, 
   Trash2, 
@@ -435,7 +436,7 @@ export default function DashboardContent() {
   if (authLoading || creating) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center space-y-4 select-none">
-        <Loader2 className="w-6 h-6 text-white animate-spin" />
+        <MobiusLoopIcon className="w-12 h-12 text-white" />
         <p className="text-white/70 text-xs font-bold uppercase tracking-wider animate-pulse">
           {creating ? 'Creating your extension workspace...' : 'Loading dashboard...'}
         </p>

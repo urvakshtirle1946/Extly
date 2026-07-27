@@ -1,7 +1,9 @@
 "use client";
 
 import React from "react";
-import { ArrowUp, Loader2, Plus, Mic, ChevronDown } from "lucide-react";
+import { ArrowUp, Plus, Mic, ChevronDown } from "lucide-react";
+import { MobiusLoopIcon } from "@/components/ui/mobius-loop-icon";
+import { SiriWave } from "@/components/ui/siri-wave";
 import { useApiFetch } from "@/utils/api";
 
 // Utility function for className merging
@@ -314,7 +316,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
                         }
                         className="px-2 py-1 bg-purple-600 hover:bg-purple-500 disabled:opacity-40 text-white text-[10px] font-bold rounded-lg transition-all shrink-0 flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
                       >
-                        {byokSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : "🔒"}
+                        {byokSaving ? <MobiusLoopIcon className="w-3 h-3 text-white" /> : "🔒"}
                       </button>
                     </div>
                   )}
@@ -340,14 +342,18 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
             type="button"
             onClick={toggleListening}
             className={cn(
-              "p-1.5 transition-all cursor-pointer rounded-full",
+              "transition-all duration-300 cursor-pointer flex items-center justify-center",
               isListening 
-                ? "text-red-500 bg-red-500/10 animate-pulse border border-red-500/20" 
-                : "text-neutral-500 hover:text-white"
+                ? "w-10 h-8 p-0 border-none bg-transparent scale-110" 
+                : "p-1.5 text-neutral-500 hover:text-white rounded-full"
             )}
             title={isListening ? "Listening... click to stop" : "Use voice input"}
           >
-            <Mic className="h-4 w-4" />
+            {isListening ? (
+              <SiriWave size={40} renderScale={1} variant="wave" className="w-full h-full pointer-events-none bg-transparent" />
+            ) : (
+              <Mic className="h-4 w-4" />
+            )}
           </button>
 
           {/* Submit Button */}
@@ -358,7 +364,7 @@ export const PromptInputBox = React.forwardRef((props: PromptInputBoxProps, ref:
             className="w-8 h-8 rounded-full bg-neutral-800 hover:bg-neutral-700 disabled:bg-neutral-900 text-white disabled:text-neutral-600 flex items-center justify-center transition-all shrink-0 cursor-pointer disabled:cursor-not-allowed"
           >
             {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin text-neutral-550" />
+              <MobiusLoopIcon className="h-4 w-4 text-white" />
             ) : (
               <ArrowUp className="h-4 w-4 stroke-[2.5]" />
             )}

@@ -33,33 +33,35 @@ export function PricingCards({ user }: PricingCardsProps) {
   return (
     <section id="pricing" className="relative z-10 py-20 px-4 sm:px-6 max-w-6xl w-full mx-auto select-none font-sans">
       {/* Clean Title Only */}
-      <div className="mx-auto max-w-2xl text-center mb-12">
-        <h2 className="text-4xl sm:text-5xl font-serif-yc font-normal text-white tracking-tight">
+      <div className="mx-auto max-w-2xl text-center mb-10">
+        <h2 className="text-4xl sm:text-5xl font-serif-yc font-normal text-white tracking-tight drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
           Pricing
         </h2>
-        <p className="text-neutral-400 text-sm mt-2">
-          No monthly subscription traps. Pay only for the credits you need.
-        </p>
+        <div className="mt-3 inline-block px-4 py-1.5 bg-black/60 backdrop-blur-md rounded-full border border-white/20 shadow-xl">
+          <p className="text-white font-medium text-xs sm:text-sm tracking-wide">
+            No monthly subscription traps. Pay only for the credits you need.
+          </p>
+        </div>
       </div>
 
       {/* Credit Selection Pills - High Visibility Bar */}
-      <div className="flex flex-wrap items-center justify-center gap-2 mb-12 max-w-3xl mx-auto px-2">
+      <div className="flex flex-wrap items-center justify-center gap-2.5 mb-14 max-w-4xl mx-auto px-2">
         {CREDIT_TIERS.map((tier, idx) => (
           <button
             key={tier.credits}
             onClick={() => setSelectedTierIndex(idx)}
-            className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-1.5 border ${
+            className={`px-4 py-2.5 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-1.5 border shadow-lg ${
               selectedTierIndex === idx
-                ? 'bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.3)] scale-105'
-                : 'bg-white/10 text-white border-white/20 hover:bg-white/20 hover:border-white/40'
+                ? 'bg-white text-black border-white shadow-[0_0_25px_rgba(255,255,255,0.4)] scale-105 z-10'
+                : 'bg-black/70 backdrop-blur-md text-white border-white/30 hover:bg-black/90 hover:border-white/60 hover:scale-105'
             }`}
           >
-            <span>{tier.credits} Credits</span>
-            <span className={selectedTierIndex === idx ? 'text-neutral-600' : 'text-neutral-400'}>
+            <span className="font-extrabold">{tier.credits} Credits</span>
+            <span className={selectedTierIndex === idx ? 'text-neutral-700 font-extrabold' : 'text-neutral-200 font-bold'}>
               (${tier.price})
             </span>
             {tier.popular && (
-              <span className="px-1.5 py-0.5 text-[9px] font-black uppercase bg-amber-400 text-black rounded-full ml-1">
+              <span className="px-2 py-0.5 text-[9px] font-black uppercase bg-amber-400 text-black rounded-full ml-1 shadow-sm">
                 Best
               </span>
             )}

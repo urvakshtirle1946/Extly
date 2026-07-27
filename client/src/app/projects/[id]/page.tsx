@@ -9,6 +9,7 @@ import Editor from '@monaco-editor/react'
 import ReactMarkdown from 'react-markdown'
 import { AgentsThinkingBadge, PixelOrb } from '@/components/ui/grok-agent-thinking-indicator'
 import { CommandPalette } from '@/components/ui/be-ui-command-palette'
+import { MobiusLoopIcon } from '@/components/ui/mobius-loop-icon'
 import { 
   ArrowLeft, 
   Code, 
@@ -1141,7 +1142,7 @@ export default function EditorPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center space-y-4">
-        <Loader2 className="w-6 h-6 text-white animate-spin" />
+        <MobiusLoopIcon className="w-12 h-12 text-white" />
         <p className="text-neutral-450 text-xs tracking-wide uppercase">Loading workspace...</p>
       </div>
     )

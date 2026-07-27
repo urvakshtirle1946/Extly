@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { MobiusLoopIcon } from "@/components/ui/mobius-loop-icon";
 
 const TOTAL_FRAMES = 135;
 
@@ -161,7 +162,7 @@ export function ScrollVideoPlayer() {
           {/* Preloader Overlay */}
           {!isPreloaded && (
             <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm rounded-2xl space-y-3">
-              <div className="w-10 h-10 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin" />
+              <MobiusLoopIcon className="w-12 h-12 text-emerald-400" />
               <p className="text-xs text-neutral-400 font-mono font-medium">{loadProgress}% loading frames...</p>
             </div>
           )}
