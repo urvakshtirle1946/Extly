@@ -73,6 +73,14 @@ interface PreviewLog {
   timestamp: string
 }
 
+function formatGenerationError(message: string) {
+  return `❌ **Generation Failed**\n\n${message}\n\nPlease try again.`
+}
+
+function formatCreditError(message: string) {
+  return `⚠️ **Build Credits Exhausted**\n\n${message}`
+}
+
 // Helper to construct hierarchical tree from flat paths
 function buildFileTree(files: Record<string, string>): TreeNode[] {
   const root: TreeNode[] = []
@@ -757,16 +765,22 @@ export default function EditorPage() {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         const errMsg = errorData.error || `HTTP error ${response.status}`
+        const isAccountCreditError = response.status === 403
         
         setMessages((prev) =>
           prev.map((m) =>
             m.id === assistantMessageId
-              ? { ...m, content: `⚠️ **Credits Exhausted**\n\nYou've used all your build credits. Purchase more to continue building.` }
+              ? {
+                  ...m,
+                  content: isAccountCreditError
+                    ? formatCreditError(errMsg)
+                    : formatGenerationError(errMsg),
+                }
               : m
           )
         )
         
-        if (response.status === 403) {
+        if (isAccountCreditError) {
           setIsCreditsModalOpen(true)
         }
         
@@ -815,14 +829,7 @@ export default function EditorPage() {
             setError(event.message)
             setStatus('failed')
             const errMsg = event.message || 'Stream generation failed'
-            const isCreditError = 
-              errMsg.toLowerCase().includes('credits') || 
-              errMsg.toLowerCase().includes('limit reached') || 
-              errMsg.toLowerCase().includes('403')
-            
-            const messageText = isCreditError
-              ? "⚠️ **Daily Build Credits Exhausted**\n\nYou have used your 10 free build credits. Please [upgrade your plan](/dashboard?tab=billing) to continue building and deploying extensions."
-              : `❌ **Generation Failed**\n\nAn error occurred during response generation: \`${errMsg}\`. Please try again.`;
+            const messageText = formatGenerationError(errMsg)
 
             setMessages((prev) =>
               prev.map((m) =>
@@ -859,16 +866,10 @@ export default function EditorPage() {
 
       console.error('Streaming error:', err)
       const errStr = String(err?.message || err || 'Streaming failed')
-      const isCreditError = 
-        errStr.toLowerCase().includes('credits') || 
-        errStr.toLowerCase().includes('limit reached') || 
-        errStr.toLowerCase().includes('403')
       setError(errStr)
       setStatus('failed')
       
-      const errorMessage = isCreditError
-        ? "⚠️ **Daily Build Credits Exhausted**\n\nYou have used your 10 free build credits. Please [upgrade your plan](/dashboard?tab=billing) to continue building and deploying extensions."
-        : `❌ **Failed:** ${errStr}`;
+      const errorMessage = formatGenerationError(errStr)
 
       setMessages((prev) =>
         prev.map((m) =>
@@ -1726,9 +1727,9 @@ export default function EditorPage() {
             </div>
 
             {/* Title & Description */}
-            <h3 className="text-base font-bold text-white mb-2">Daily Credits Exhausted</h3>
+            <h3 className="text-base font-bold text-white mb-2">Build Credits Exhausted</h3>
             <p className="text-neutral-450 text-xs leading-relaxed mb-6">
-              You have completed all 10 of your free extension builds. Upgrade to the Pro plan for unlimited generations, advanced AI capabilities, and immediate previews.
+              Your available build credits have been used. Add credits to continue building extensions.
             </p>
 
             {/* Actions */}
