@@ -11,8 +11,10 @@ import { useApiFetch } from '@/utils/api'
 import { PromptexLogo, PromptexLogoMark } from '@/components/ui/promptex-logo'
 import { PromptInputBox } from '@/components/ui/ai-prompt-box'
 import { CinematicFooter } from '@/components/ui/motion-footer'
+import FooterTapedDesign from '@/components/ui/footer-taped-design'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { ScrollVideoPlayer } from '@/components/ui/scroll-video-player'
+import { PricingCards } from '@/components/ui/pricing-cards'
 
 export default function RootPage() {
 
@@ -21,7 +23,6 @@ export default function RootPage() {
   const apiFetch = useApiFetch()
   const [creatingProject, setCreatingProject] = useState(false)
   const [copiedEmail, setCopiedEmail] = useState(false)
-  const [isYearly, setIsYearly] = useState(false)
 
   const faqItems = [
     {
@@ -153,7 +154,7 @@ export default function RootPage() {
 
   // Unauthenticated → NEAT landing
   return (
-    <div id="main-container" className="min-h-screen text-white overflow-y-auto relative font-sans flex flex-col scroll-smooth">
+    <div id="main-container" className="min-h-screen text-white relative font-sans flex flex-col scroll-smooth">
 
       {/* Background Video */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden bg-black">
@@ -244,20 +245,20 @@ export default function RootPage() {
       </main>
 
       {/* How it Works Section */}
-      <section id="how-it-works" className="relative z-10 pt-6 pb-16 px-6 max-w-5xl w-full mx-auto select-none font-sans">
+      <section id="how-it-works" className="relative z-10 pt-6 pb-16 w-full select-none font-sans">
         {/* Badge */}
-        <div className="flex justify-center mb-10">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-medium tracking-wider uppercase bg-[#0c0c0d] border border-white/[0.08] text-neutral-400 rounded-full">
+        <div className="flex justify-center mb-10 px-6">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-medium tracking-wider uppercase bg-[#0c0c0d] border border-white/[0.08] text-neutral-400 rounded-full shadow-lg">
             <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
             How it works
           </span>
         </div>
 
-        {/* Workspace Screenshot — breaks out of section max-width */}
-        <div className="-mx-6 sm:-mx-12 lg:-mx-24 xl:-mx-40 relative">
-          {/* Glow halo */}
-          <div className="absolute inset-x-0 -top-8 h-32 bg-white/[0.03] blur-3xl rounded-full pointer-events-none" />
-          <div className="relative rounded-2xl overflow-hidden py-4">
+        {/* Workspace Screenshot / Frame Player Track */}
+        <div className="w-full relative">
+          {/* Ambient Glow halo */}
+          <div className="absolute inset-x-0 -top-12 h-40 bg-purple-500/[0.05] blur-3xl rounded-full pointer-events-none" />
+          <div className="relative py-2">
             <ScrollVideoPlayer />
           </div>
         </div>
@@ -266,213 +267,7 @@ export default function RootPage() {
 
 
       {/* Pricing Section */}
-      <section id="pricing" className="relative z-10 pt-16 pb-32 px-6 w-full select-none overflow-hidden">
-        {/* Background Large Text "Pricing" with low opacity */}
-        <div className="absolute inset-x-0 -top-16 flex justify-center pointer-events-none z-0 overflow-hidden">
-          <h2 className="text-[160px] sm:text-[240px] md:text-[320px] font-serif-yc font-normal tracking-tighter leading-[1.2] pt-10 select-none text-white italic"
-            style={{ 
-              userSelect: 'none',
-              filter: 'drop-shadow(0 0 35px rgba(255,255,255,0.25))'
-            }}
-          >
-            Pricing
-          </h2>
-        </div>
-
-
-        {/* Pricing Cards Grid */}
-        <div className="relative mt-44">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto relative z-10">
-            {/* Card 1: Free Plan */}
-            <div className="bg-white/[0.04] backdrop-blur-[20px] border border-white/[0.12] rounded-[24px] p-8 flex flex-col justify-between min-h-[580px] shadow-2xl transition-all duration-300 hover:bg-white/[0.07] hover:border-white/[0.2]">
-              <div className="space-y-8">
-                <div className="space-y-2">
-                  <span className="text-[12px] font-semibold text-neutral-400">Free Plan</span>
-                  <h3 className="text-4xl font-extrabold text-white tracking-tight">Free</h3>
-                </div>
-                
-                <div className="h-[1px] bg-white/[0.06]" />
-
-                <ul className="space-y-4">
-                  <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                    </div>
-                    <span className="text-[13px] text-neutral-450">10 build credits on signup</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                    </div>
-                    <span className="text-[13px] text-neutral-450">Popup UI preview</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                    </div>
-                    <span className="text-[13px] text-neutral-455">Download extension ZIP</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                    </div>
-                    <span className="text-[13px] text-neutral-455">Community support</span>
-                  </li>
-                </ul>
-              </div>
-              
-              <a 
-                href="/api/auth/register" 
-                className="mt-8 w-full py-3 bg-[#0d0d0e]/80 hover:bg-neutral-900 border border-white/[0.08] hover:border-white/[0.15] text-white text-center font-bold rounded-full text-xs transition-all duration-200 block"
-              >
-                Get Started
-              </a>
-            </div>
-
-            {/* Card 2: Standard Plan */}
-            <div className="bg-white/[0.06] backdrop-blur-[20px] border border-white/[0.25] rounded-[24px] p-8 flex flex-col justify-between min-h-[580px] shadow-2xl transition-all duration-300 hover:bg-white/[0.09] hover:border-white/[0.35] relative ring-1 ring-white/[0.1]">
-              <div className="space-y-8">
-                <div className="space-y-2">
-                  <span className="text-[12px] font-semibold text-neutral-400">Standard Plan</span>
-                  <h3 className="text-4xl font-extrabold text-white tracking-tight">
-                    {isYearly ? '$7.99' : '$9.99'}
-                    <span className="text-lg font-medium text-neutral-450">/m</span>
-                  </h3>
-                  {isYearly && (
-                    <span className="text-[10px] text-neutral-500 block mt-1">
-                      Billed yearly ($95.88/yr)
-                    </span>
-                  )}
-                </div>
-                
-                <div className="h-[1px] bg-white/[0.06]" />
-
-                <ul className="space-y-4">
-                  <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                    </div>
-                    <span className="text-[13px] text-neutral-450">100 build credits / month</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                    </div>
-                    <span className="text-[13px] text-neutral-450">Everything in Free</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                    </div>
-                    <span className="text-[13px] text-neutral-455">Version history & rollback</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                    </div>
-                    <span className="text-[13px] text-neutral-455">Priority support</span>
-                  </li>
-                </ul>
-              </div>
-              
-              <a 
-                href={user ? "/dashboard?tab=billing" : "/api/auth/register"} 
-                className="mt-8 w-full py-3 bg-white hover:bg-neutral-100 text-black text-center font-bold rounded-full text-xs transition-all duration-205 shadow-[0_0_20px_rgba(255,255,255,0.15)] block"
-              >
-                {user ? "Upgrade Plan" : "Get Started"}
-              </a>
-            </div>
-
-            {/* Card 3: Pro Plan */}
-            <div className="bg-white/[0.04] backdrop-blur-[20px] border border-white/[0.12] rounded-[24px] p-8 flex flex-col justify-between min-h-[580px] shadow-2xl transition-all duration-300 hover:bg-white/[0.07] hover:border-white/[0.2]">
-              <div className="space-y-8">
-                <div className="space-y-2">
-                  <span className="text-[12px] font-semibold text-purple-400">Pro Plan</span>
-                  <h3 className="text-4xl font-extrabold text-white tracking-tight">
-                    {isYearly ? '$15.99' : '$19.99'}
-                    <span className="text-lg font-medium text-neutral-450">/m</span>
-                  </h3>
-                  {isYearly && (
-                    <span className="text-[10px] text-neutral-500 block mt-1">
-                      Billed yearly ($191.88/yr)
-                    </span>
-                  )}
-                </div>
-                
-                <div className="h-[1px] bg-white/[0.06]" />
-
-                <ul className="space-y-4">
-                  <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                    </div>
-                    <span className="text-[13px] text-neutral-455">400 build credits / month</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                    </div>
-                    <span className="text-[13px] text-neutral-450">Everything in Standard</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                    </div>
-                    <span className="text-[13px] text-neutral-455">Live browser preview (Playwright)</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                    </div>
-                    <span className="text-[13px] text-neutral-455">AI self-healing debugger</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-white/[0.06] border border-white/[0.15] flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-white" strokeWidth={3.5} />
-                    </div>
-                    <span className="text-[13px] text-neutral-455">Early access to new features</span>
-                  </li>
-                </ul>
-              </div>
-              
-              <a 
-                href={user ? "/dashboard?tab=billing" : "/api/auth/register"} 
-                className="mt-8 w-full py-3 bg-[#0d0d0e]/80 hover:bg-neutral-900 border border-white/[0.08] hover:border-white/[0.15] text-white text-center font-bold rounded-full text-xs transition-all duration-200 block"
-              >
-                {user ? "Upgrade Plan" : "Get Started"}
-              </a>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Controls */}
-        <div className="max-w-5xl mx-auto mt-16 flex flex-col sm:flex-row justify-between items-center gap-6 relative z-10 px-4">
-          {/* Switch: Billed Yearly */}
-          <label className="flex items-center gap-3 cursor-pointer select-none">
-            <div className="relative">
-              <input 
-                type="checkbox" 
-                className="sr-only peer" 
-                checked={isYearly} 
-                onChange={(e) => setIsYearly(e.target.checked)} 
-              />
-              <div className="w-9 h-5 bg-neutral-900 border border-white/[0.08] rounded-full transition-colors duration-200 peer-checked:bg-white"></div>
-              <div className="absolute left-[3px] top-[3px] w-3.5 h-3.5 bg-white rounded-full transition-transform duration-200 transform peer-checked:translate-x-4 peer-checked:bg-black"></div>
-            </div>
-            <span className="text-xs font-semibold text-neutral-400">
-              Billed Yearly
-            </span>
-          </label>
-
-          {/* Badge: Plans */}
-          <div className="px-4 py-1 bg-[#0b0b0c]/80 border border-white/[0.08] rounded-full text-[10px] font-bold text-neutral-400 uppercase tracking-widest cursor-pointer hover:text-white transition-colors">
-            Plans
-          </div>
-          
-          {/* Spacer to align Billed Yearly left and Plans center */}
-          <div className="hidden sm:block w-[100px]" />
-        </div>
-      </section>
+      <PricingCards user={user} />
 
       {/* FAQ Section */}
       <section id="faq" className="relative z-10 py-24 px-4 md:px-6 max-w-5xl w-full mx-auto select-none font-sans">
@@ -516,8 +311,8 @@ export default function RootPage() {
         </div>
       </section>
 
-      {/* Cinematic Footer */}
-      <CinematicFooter />
+      {/* Taped Footer Design */}
+      <FooterTapedDesign />
     </div>
   )
 }
