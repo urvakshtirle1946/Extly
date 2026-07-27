@@ -973,15 +973,34 @@ async function executeCompletion(
   messages: any[],
   parser: XmlStreamParser,
   onEvent: (event: StreamEvent) => void,
-  model = "google/gemini-2.5-flash"
+  model = "google/gemini-2.5-flash",
+  maxTokens = model.includes("gemini") ? 2048 : 4096
 ): Promise<{ files: Record<string, string> }> {
-  const responseStream = await client.chat.completions.create({
-    model,
-    messages,
-    stream: true,
-    temperature: 0.2,
-    max_tokens: model.includes("gemini") ? 2048 : 4096,
-  });
+  let responseStream
+
+  try {
+    responseStream = await client.chat.completions.create({
+      model,
+      messages,
+      stream: true,
+      temperature: 0.2,
+      max_tokens: maxTokens,
+    })
+  } catch (error: any) {
+    // OpenRouter returns the affordable completion budget in this 402 response.
+    // Retry once with a small safety margin so an account with a low remaining
+    // provider balance can still complete a generation.
+    const affordableMatch = String(error?.message || '').match(/can only afford\s+(\d+)\s+tokens/i)
+    const affordableTokens = affordableMatch ? Number(affordableMatch[1]) : 0
+    const retryMaxTokens = Math.floor(affordableTokens * 0.9)
+
+    if (affordableTokens >= 256 && retryMaxTokens < maxTokens) {
+      console.warn(`[OpenRouter] Retrying with ${retryMaxTokens} tokens (provider balance limit).`)
+      return executeCompletion(client, messages, parser, onEvent, model, retryMaxTokens)
+    }
+
+    throw error
+  }
 
   for await (const chunk of responseStream) {
     const text = chunk.choices[0]?.delta?.content || "";
