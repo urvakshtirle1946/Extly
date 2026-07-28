@@ -15,6 +15,8 @@ const openrouter = new OpenAI({
 
 const QWEN_CLOUD_BASE_URL = process.env.QWEN_CLOUD_BASE_URL || "https://dashscope-intl.aliyuncs.com/compatible-mode/v1";
 const QWEN_CLOUD_MODEL = process.env.QWEN_CLOUD_MODEL || "qwen3-coder-plus";
+const GENERATION_MAX_TOKENS = Math.max(1024, Number(process.env.GENERATION_MAX_TOKENS || 8192));
+const MAX_LENGTH_CONTINUATIONS = 3;
 
 const SYSTEM_PROMPT = `You are an expert Chrome Extension developer. 
 You build FULLY FUNCTIONAL, production-ready Manifest V3 extensions.
@@ -936,46 +938,53 @@ export async function generateExtension(
     baseURL: string;
     model: string;
     defaultHeaders?: Record<string, string>;
+    maxTokens?: number;
   }> = [
     {
       name: "OpenRouter",
       apiKey: process.env.OPENROUTER_API_KEY,
       baseURL: "https://openrouter.ai/api/v1",
       model: "google/gemini-2.5-flash",
+      maxTokens: GENERATION_MAX_TOKENS,
       defaultHeaders: {
         "HTTP-Referer": "https://github.com/OpenExtensionCraft",
         "X-Title": "ExtensionCraft",
       },
     },
     {
+      name: "Qwen Cloud",
+      apiKey: process.env.QWEN_CLOUD_API_KEY,
+      baseURL: QWEN_CLOUD_BASE_URL,
+      model: QWEN_CLOUD_MODEL,
+      maxTokens: GENERATION_MAX_TOKENS,
+    },
+    {
       name: "Groq",
       apiKey: process.env.GROQ_API_KEY,
       baseURL: "https://api.groq.com/openai/v1",
       model: "llama-3.3-70b-versatile",
+      maxTokens: GENERATION_MAX_TOKENS,
     },
     {
       name: "Cerebras",
       apiKey: process.env.CEREBRAS_API_KEY,
       baseURL: "https://api.cerebras.ai/v1",
       model: "llama-3.3-70b",
+      maxTokens: GENERATION_MAX_TOKENS,
     },
     {
       name: "NVIDIA NIM",
       apiKey: process.env.NVIDIA_API_KEY,
       baseURL: "https://integrate.api.nvidia.com/v1",
       model: "meta/llama-3.3-70b-instruct",
+      maxTokens: GENERATION_MAX_TOKENS,
     },
     {
       name: "TogetherAI",
       apiKey: process.env.TOGETHER_API_KEY,
       baseURL: "https://api.together.xyz/v1",
       model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
-    },
-    {
-      name: "Qwen Cloud",
-      apiKey: process.env.QWEN_CLOUD_API_KEY,
-      baseURL: QWEN_CLOUD_BASE_URL,
-      model: QWEN_CLOUD_MODEL,
+      maxTokens: GENERATION_MAX_TOKENS,
     },
   ];
 
@@ -1000,7 +1009,8 @@ export async function generateExtension(
         messages,
         providerParser,
         onEvent,
-        provider.model
+        provider.model,
+        provider.maxTokens
       );
 
       console.log(`[LLM Rotation] Code generation successful using ${provider.name}.`);
@@ -1030,42 +1040,61 @@ async function executeCompletion(
   parser: XmlStreamParser,
   onEvent: (event: StreamEvent) => void,
   model = "google/gemini-2.5-flash",
-  maxTokens = model.includes("gemini") ? 2048 : 4096
+  maxTokens = GENERATION_MAX_TOKENS
 ): Promise<{ files: Record<string, string> }> {
-  let responseStream
+  let completionMessages = messages
 
-  try {
-    responseStream = await client.chat.completions.create({
-      model,
-      messages,
-      stream: true,
-      temperature: 0.2,
-      max_tokens: maxTokens,
-    })
-  } catch (error: any) {
-    // OpenRouter returns the affordable completion budget in this 402 response.
-    // Retry once with a small safety margin so an account with a low remaining
-    // provider balance can still complete a generation.
-    const affordableMatch = String(error?.message || '').match(/can only afford\s+(\d+)\s+tokens/i)
-    const affordableTokens = affordableMatch ? Number(affordableMatch[1]) : 0
-    const retryMaxTokens = Math.floor(affordableTokens * 0.9)
+  for (let continuation = 0; continuation <= MAX_LENGTH_CONTINUATIONS; continuation++) {
+    let responseStream
+    try {
+      responseStream = await client.chat.completions.create({
+        model,
+        messages: completionMessages,
+        stream: true,
+        temperature: 0.2,
+        max_tokens: maxTokens,
+      })
+    } catch (error: any) {
+      // Some providers report the affordable completion budget in a 402 error.
+      // Retry with that amount before rotating to another provider.
+      const affordableMatch = String(error?.message || '').match(/can only afford\s+(\d+)\s+tokens/i)
+      const affordableTokens = affordableMatch ? Number(affordableMatch[1]) : 0
+      const retryMaxTokens = Math.floor(affordableTokens * 0.9)
 
-    if (affordableTokens >= 256 && retryMaxTokens < maxTokens) {
-      console.warn(`[OpenRouter] Retrying with ${retryMaxTokens} tokens (provider balance limit).`)
-      return executeCompletion(client, messages, parser, onEvent, model, retryMaxTokens)
+      if (affordableTokens >= 256 && retryMaxTokens < maxTokens) {
+        console.warn(`[LLM] Retrying with ${retryMaxTokens} tokens (provider balance limit).`)
+        return executeCompletion(client, messages, parser, onEvent, model, retryMaxTokens)
+      }
+      throw error
     }
 
-    throw error
-  }
-
-  for await (const chunk of responseStream) {
-    const text = chunk.choices[0]?.delta?.content || "";
-    if (text) {
-      const events = parser.push(text);
-      for (const event of events) {
-        onEvent(event);
+    let finishReason: string | null | undefined
+    let responseText = ''
+    for await (const chunk of responseStream) {
+      const choice = chunk.choices[0]
+      const text = choice?.delta?.content || ''
+      finishReason = choice?.finish_reason ?? finishReason
+      if (text) {
+        responseText += text
+        const events = parser.push(text)
+        for (const event of events) onEvent(event)
       }
     }
+
+    if (finishReason !== 'length') break
+    if (continuation === MAX_LENGTH_CONTINUATIONS) {
+      throw new Error('The model reached its output limit repeatedly. Please retry with a smaller request.')
+    }
+
+    console.warn(`[LLM] ${model} reached its output limit; continuing generation (${continuation + 1}/${MAX_LENGTH_CONTINUATIONS}).`)
+    completionMessages = [
+      ...completionMessages,
+      { role: 'assistant', content: responseText },
+      {
+        role: 'user',
+        content: 'Continue exactly where your previous response stopped. Do not repeat any text. If you are inside a <file> tag, continue that file content and close it with </file>. Otherwise continue using the required <file path="..."> format until every required file is complete.'
+      }
+    ]
   }
 
   // Flush any remaining buffered content
