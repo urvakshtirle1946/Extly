@@ -13,6 +13,9 @@ const openrouter = new OpenAI({
   },
 });
 
+const QWEN_CLOUD_BASE_URL = process.env.QWEN_CLOUD_BASE_URL || "https://dashscope-intl.aliyuncs.com/compatible-mode/v1";
+const QWEN_CLOUD_MODEL = process.env.QWEN_CLOUD_MODEL || "qwen3-coder-plus";
+
 const SYSTEM_PROMPT = `You are an expert Chrome Extension developer. 
 You build FULLY FUNCTIONAL, production-ready Manifest V3 extensions.
 
@@ -930,9 +933,27 @@ export async function generateExtension(
     return await executeCompletion(openrouter, messages, parser, onEvent);
   } catch (error: any) {
     console.warn("[OpenRouter] Primary API key failed. Error:", error.message || error);
-    
+
+    // Qwen Cloud is reserved for OpenRouter account/rate-limit failures so
+    // transient request errors still behave like normal OpenRouter failures.
+    if (isOpenRouterLimitError(error) && process.env.QWEN_CLOUD_API_KEY) {
+      console.warn("[LLM Fallback] OpenRouter limit reached; using Qwen Cloud.");
+      const qwenClient = new OpenAI({
+        apiKey: process.env.QWEN_CLOUD_API_KEY,
+        baseURL: QWEN_CLOUD_BASE_URL,
+      });
+      const qwenParser = new XmlStreamParser();
+
+      try {
+        return await executeCompletion(qwenClient, messages, qwenParser, onEvent, QWEN_CLOUD_MODEL);
+      } catch (qwenErr) {
+        console.error("Qwen Cloud fallback API error:", qwenErr);
+        // Keep the existing secondary fallback available if Qwen is unavailable.
+      }
+    }
+
     if (process.env.GROQ_API_KEY) {
-      console.warn("[LLM Fallback] Switching silently to Groq API...");
+      console.warn("[LLM Fallback] Using Groq API.");
       const groqClient = new OpenAI({
         apiKey: process.env.GROQ_API_KEY,
         baseURL: "https://api.groq.com/openai/v1",
@@ -946,27 +967,17 @@ export async function generateExtension(
       }
     }
 
-    console.warn("[OpenRouter] Switching silently to fallback key...");
-    const fallbackClient = new OpenAI({
-      apiKey: FALLBACK_API_KEY,
-      baseURL: "https://openrouter.ai/api/v1",
-      defaultHeaders: {
-        "HTTP-Referer": "https://github.com/OpenExtensionCraft",
-        "X-Title": "ExtensionCraft",
-      },
-    });
-
-    const fallbackParser = new XmlStreamParser();
-    try {
-      return await executeCompletion(fallbackClient, messages, fallbackParser, onEvent);
-    } catch (fallbackErr) {
-      console.error("OpenRouter Fallback API Error:", fallbackErr);
-      throw fallbackErr;
-    }
+    throw error;
   }
 }
 
-const FALLBACK_API_KEY = process.env.OPENROUTER_API_KEY || "";
+function isOpenRouterLimitError(error: any): boolean {
+  const status = Number(error?.status ?? error?.response?.status ?? 0);
+  if ([402, 429].includes(status)) return true;
+
+  const message = String(error?.message || error || "").toLowerCase();
+  return /(?:rate[ -]?limit|too many requests|quota|credit|balance|provider limit|can only afford)/.test(message);
+}
 
 async function executeCompletion(
   client: OpenAI,
