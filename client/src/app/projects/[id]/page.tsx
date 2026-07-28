@@ -793,6 +793,42 @@ export default function EditorPage() {
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
       let buffer = ''
+      let pendingText = ''
+      const pendingFileChunks: Record<string, string> = {}
+      let flushTimer: ReturnType<typeof setTimeout> | null = null
+
+      // Providers can send token-sized chunks. Updating Monaco/React for every
+      // token makes generation look much slower than the actual model stream.
+      const flushStreamUpdates = () => {
+        if (flushTimer) {
+          clearTimeout(flushTimer)
+          flushTimer = null
+        }
+
+        const text = pendingText
+        pendingText = ''
+        const fileChunks = { ...pendingFileChunks }
+        for (const path of Object.keys(pendingFileChunks)) delete pendingFileChunks[path]
+
+        if (text) {
+          setMessages((prev) => prev.map((m) =>
+            m.id === assistantMessageId ? { ...m, content: m.content + text } : m
+          ))
+        }
+        if (Object.keys(fileChunks).length) {
+          setFiles((prev) => {
+            const next = { ...prev }
+            for (const [path, delta] of Object.entries(fileChunks)) {
+              next[path] = (next[path] || '') + delta
+            }
+            return next
+          })
+        }
+      }
+
+      const scheduleStreamFlush = () => {
+        if (!flushTimer) flushTimer = setTimeout(flushStreamUpdates, 80)
+      }
 
       const processLine = (line: string) => {
         if (!line.startsWith('data: ')) return
@@ -804,28 +840,24 @@ export default function EditorPage() {
 
           if (event.type === 'text') {
             accumulatedText += event.delta
-            setMessages((prev) =>
-              prev.map((m) =>
-                m.id === assistantMessageId
-                  ? { ...m, content: m.content + event.delta }
-                  : m
-              )
-            )
+            pendingText += event.delta
+            scheduleStreamFlush()
           } else if (event.type === 'file_start') {
+            flushStreamUpdates()
             setFiles((prev) => ({ ...prev, [event.path]: '' }))
             setActiveFile(event.path)
           } else if (event.type === 'file_chunk') {
-            setFiles((prev) => ({
-              ...prev,
-              [event.path]: (prev[event.path] || '') + event.delta
-            }))
+            pendingFileChunks[event.path] = (pendingFileChunks[event.path] || '') + event.delta
+            scheduleStreamFlush()
           } else if (event.type === 'done') {
+            flushStreamUpdates()
             setFiles(event.files)
             setStatus('idle')
             const modifiedCount = Object.keys(event.files).length
             setLastGeneratedCount(modifiedCount)
             setPendingReview(true)
           } else if (event.type === 'error') {
+            flushStreamUpdates()
             setError(event.message)
             setStatus('failed')
             const errMsg = event.message || 'Stream generation failed'
@@ -861,6 +893,7 @@ export default function EditorPage() {
           processLine(line)
         }
       }
+      flushStreamUpdates()
     } catch (err: any) {
       if (err.name === 'AbortError') return
 
