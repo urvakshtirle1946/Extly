@@ -137,6 +137,8 @@ export async function handleVerifyPayment(req: AuthenticatedRequest, res: Respon
     await db.query(
       `UPDATE users 
        SET plan = 'pro', 
+           subscription_status = 'active',
+           subscription_ends_at = NULL,
            total_credits = COALESCE(total_credits, 0) + $1, 
            used_credits = 0 
        WHERE id = $2`,
@@ -243,6 +245,8 @@ export async function handleRazorpayWebhook(req: any, res: Response) {
       await db.query(
         `UPDATE users 
          SET plan = 'pro', 
+             subscription_status = 'active',
+             subscription_ends_at = NULL,
              total_credits = COALESCE(total_credits, 0) + $1, 
              used_credits = 0 
          WHERE id = $2`,

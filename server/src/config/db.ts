@@ -134,6 +134,8 @@ export async function initDb() {
     // Dynamically add plan column if it doesn't exist
     await client.query(`
       ALTER TABLE users ADD COLUMN IF NOT EXISTS plan VARCHAR(50) DEFAULT 'free';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_status VARCHAR(50) DEFAULT 'active';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_ends_at TIMESTAMP WITH TIME ZONE;
     `)
     // Dynamically add credit columns if they don't exist
     await client.query(`

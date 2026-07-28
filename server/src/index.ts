@@ -27,6 +27,7 @@ import { handleCreateOrder, handleVerifyPayment, handleRazorpayWebhook } from '.
 import { handleSaveUserByok, handleGetUserByok, handleDeleteUserByok } from './controllers/user.controller'
 import { handleLintProject } from './controllers/lint.controller'
 import { handleGenerateCICD } from './controllers/cicd.controller'
+import { handleGetAdminOverview, handleGetAdminUsers, handleUpdateAdminSubscription } from './controllers/admin.controller'
 
 const app = express()
 const port = process.env.PORT || 4000
@@ -118,12 +119,19 @@ app.post('/api/payment/webhook', handleRazorpayWebhook as any)
 // ============================================================================
 const requireAdminKey = (req: any, res: any, next: any) => {
   const adminKey = req.headers['x-admin-key']
-  const secretKey = process.env.ADMIN_SECRET_KEY || 'promptex_secret_admin_key_2026'
+  const secretKey = process.env.ADMIN_SECRET_KEY
+  if (!secretKey) {
+    return res.status(503).json({ error: 'Admin access is not configured' })
+  }
   if (!adminKey || adminKey !== secretKey) {
     return res.status(403).json({ error: 'Unauthorized: Invalid admin key' })
   }
   next()
 }
+
+app.get('/api/admin/overview', authMiddleware as any, requireAdminKey as any, handleGetAdminOverview as any)
+app.get('/api/admin/users', authMiddleware as any, requireAdminKey as any, handleGetAdminUsers as any)
+app.patch('/api/admin/users/:userId/subscription', authMiddleware as any, requireAdminKey as any, handleUpdateAdminSubscription as any)
 
 app.post('/api/admin/users/:userId/credits', requireAdminKey as any, async (req: any, res: any) => {
   const { userId } = req.params

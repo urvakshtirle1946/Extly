@@ -929,46 +929,91 @@ export async function generateExtension(
 
   const parser = new XmlStreamParser();
 
-  try {
-    return await executeCompletion(openrouter, messages, parser, onEvent);
-  } catch (error: any) {
-    console.warn("[OpenRouter] Primary API key failed. Error:", error.message || error);
+  // Define providers ordered by capacity & performance hierarchy
+  const providerChain: Array<{
+    name: string;
+    apiKey: string | undefined;
+    baseURL: string;
+    model: string;
+    defaultHeaders?: Record<string, string>;
+  }> = [
+    {
+      name: "OpenRouter",
+      apiKey: process.env.OPENROUTER_API_KEY,
+      baseURL: "https://openrouter.ai/api/v1",
+      model: "google/gemini-2.5-flash",
+      defaultHeaders: {
+        "HTTP-Referer": "https://github.com/OpenExtensionCraft",
+        "X-Title": "ExtensionCraft",
+      },
+    },
+    {
+      name: "Groq",
+      apiKey: process.env.GROQ_API_KEY,
+      baseURL: "https://api.groq.com/openai/v1",
+      model: "llama-3.3-70b-versatile",
+    },
+    {
+      name: "Cerebras",
+      apiKey: process.env.CEREBRAS_API_KEY,
+      baseURL: "https://api.cerebras.ai/v1",
+      model: "llama-3.3-70b",
+    },
+    {
+      name: "NVIDIA NIM",
+      apiKey: process.env.NVIDIA_API_KEY,
+      baseURL: "https://integrate.api.nvidia.com/v1",
+      model: "meta/llama-3.3-70b-instruct",
+    },
+    {
+      name: "TogetherAI",
+      apiKey: process.env.TOGETHER_API_KEY,
+      baseURL: "https://api.together.xyz/v1",
+      model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+    },
+    {
+      name: "Qwen Cloud",
+      apiKey: process.env.QWEN_CLOUD_API_KEY,
+      baseURL: QWEN_CLOUD_BASE_URL,
+      model: QWEN_CLOUD_MODEL,
+    },
+  ];
 
-    // Qwen Cloud is reserved for OpenRouter account/rate-limit failures so
-    // transient request errors still behave like normal OpenRouter failures.
-    if (isOpenRouterLimitError(error) && process.env.QWEN_CLOUD_API_KEY) {
-      console.warn("[LLM Fallback] OpenRouter limit reached; using Qwen Cloud.");
-      const qwenClient = new OpenAI({
-        apiKey: process.env.QWEN_CLOUD_API_KEY,
-        baseURL: QWEN_CLOUD_BASE_URL,
-      });
-      const qwenParser = new XmlStreamParser();
+  let lastError: any = null;
 
-      try {
-        return await executeCompletion(qwenClient, messages, qwenParser, onEvent, QWEN_CLOUD_MODEL);
-      } catch (qwenErr) {
-        console.error("Qwen Cloud fallback API error:", qwenErr);
-        // Keep the existing secondary fallback available if Qwen is unavailable.
-      }
+  for (const provider of providerChain) {
+    if (!provider.apiKey) {
+      continue;
     }
 
-    if (process.env.GROQ_API_KEY) {
-      console.warn("[LLM Fallback] Using Groq API.");
-      const groqClient = new OpenAI({
-        apiKey: process.env.GROQ_API_KEY,
-        baseURL: "https://api.groq.com/openai/v1",
+    try {
+      console.log(`[LLM Rotation] Attempting generation with ${provider.name} (${provider.model})...`);
+      const client = new OpenAI({
+        apiKey: provider.apiKey,
+        baseURL: provider.baseURL,
+        defaultHeaders: provider.defaultHeaders,
       });
-      const groqParser = new XmlStreamParser();
-      try {
-        return await executeCompletion(groqClient, messages, groqParser, onEvent, "llama-3.3-70b-versatile");
-      } catch (groqErr) {
-        console.error("Groq Fallback API Error:", groqErr);
-        // Continue to backup OpenRouter if Groq fails
-      }
-    }
 
-    throw error;
+      const providerParser = new XmlStreamParser();
+      const result = await executeCompletion(
+        client,
+        messages,
+        providerParser,
+        onEvent,
+        provider.model
+      );
+
+      console.log(`[LLM Rotation] Code generation successful using ${provider.name}.`);
+      return result;
+    } catch (error: any) {
+      lastError = error;
+      console.warn(
+        `[LLM Rotation] Provider ${provider.name} failed (${error?.message || error}). Rotating to next provider...`
+      );
+    }
   }
+
+  throw lastError || new Error("All LLM rotation providers failed or missing API keys.");
 }
 
 function isOpenRouterLimitError(error: any): boolean {

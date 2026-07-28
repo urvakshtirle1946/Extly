@@ -65,3 +65,8 @@ body {
     transform: translateX(0);
   }
 }
+@layer components {
+  .admin-input {
+    @apply w-full rounded-lg border border-neutral-700 bg-black px-3 py-2 text-sm text-neutral-100 outline-none ring-white/20 focus:ring-2;
+  }
+}
