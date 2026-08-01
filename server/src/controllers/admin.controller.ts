@@ -1,6 +1,7 @@
 import { Response } from 'express'
 import { db } from '../config/db'
 import { AuthenticatedRequest } from '../middleware/auth.middleware'
+import { getKindeUsers, KindeUser } from '../services/kinde.service'
 
 const PLANS = new Set(['free', 'pro', 'business'])
 const SUBSCRIPTION_STATUSES = new Set(['active', 'cancelled', 'expired'])
@@ -37,31 +38,49 @@ export async function handleGetAdminUsers(req: AuthenticatedRequest, res: Respon
   const offset = (page - 1) * limit
 
   try {
-    const filter = search ? 'WHERE id ILIKE $1 OR email ILIKE $1' : ''
-    const values = search ? [`%${search}%`, limit, offset] : [limit, offset]
-    const limitIndex = search ? '$2' : '$1'
-    const offsetIndex = search ? '$3' : '$2'
+    const kindeUsers = await getKindeUsers(search)
+    const userIds = kindeUsers.map(user => user.id)
+    const localUsers = userIds.length
+      ? await db.query(
+        `SELECT id, plan, subscription_status, subscription_ends_at, total_credits, used_credits, created_at, updated_at
+         FROM users WHERE id = ANY($1::varchar[])`,
+        [userIds]
+      )
+      : { rows: [] as any[] }
+    const localUsersById = new Map(localUsers.rows.map(user => [user.id, user]))
+    const users = kindeUsers.map(user => mergeKindeUser(user, localUsersById.get(user.id)))
+    const paginatedUsers = users.slice(offset, offset + limit)
 
-    const [users, count] = await Promise.all([
-      db.query(
-        `SELECT id, email, plan, subscription_status, subscription_ends_at,
-                total_credits, used_credits, created_at, updated_at
-         FROM users ${filter}
-         ORDER BY created_at DESC LIMIT ${limitIndex} OFFSET ${offsetIndex}`,
-        values
-      ),
-      db.query(`SELECT COUNT(*)::int AS count FROM users ${filter}`, search ? [`%${search}%`] : [])
-    ])
-
-    res.json({ users: users.rows, total: count.rows[0].count, page, limit })
+    res.json({ users: paginatedUsers, total: users.length, page, limit })
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Unable to load users' })
   }
 }
 
+function mergeKindeUser(user: KindeUser, localUser?: any) {
+  return {
+    id: user.id,
+    email: user.email,
+    first_name: user.first_name || null,
+    last_name: user.last_name || null,
+    username: user.username || null,
+    picture: user.picture || null,
+    is_suspended: Boolean(user.is_suspended),
+    total_sign_ins: user.total_sign_ins || 0,
+    last_signed_in: user.last_signed_in || null,
+    plan: localUser?.plan || 'free',
+    subscription_status: localUser?.subscription_status || 'active',
+    subscription_ends_at: localUser?.subscription_ends_at || null,
+    total_credits: localUser?.total_credits ?? 10,
+    used_credits: localUser?.used_credits ?? 0,
+    created_at: user.created_on || localUser?.created_at || null,
+    updated_at: localUser?.updated_at || null,
+  }
+}
+
 export async function handleUpdateAdminSubscription(req: AuthenticatedRequest, res: Response) {
   const { userId } = req.params
-  const { plan, subscriptionStatus, subscriptionEndsAt, totalCredits, usedCredits } = req.body || {}
+  const { email, plan, subscriptionStatus, subscriptionEndsAt, totalCredits, usedCredits } = req.body || {}
 
   if (!PLANS.has(plan)) return res.status(400).json({ error: 'Invalid plan' })
   if (!SUBSCRIPTION_STATUSES.has(subscriptionStatus)) return res.status(400).json({ error: 'Invalid subscription status' })
@@ -74,6 +93,13 @@ export async function handleUpdateAdminSubscription(req: AuthenticatedRequest, r
   if (endsAt && Number.isNaN(endsAt.getTime())) return res.status(400).json({ error: 'Invalid subscription end date' })
 
   try {
+    if (typeof email !== 'string' || !email) return res.status(400).json({ error: 'A Kinde user email is required' })
+    await db.query(
+      `INSERT INTO users (id, email, password_hash)
+       VALUES ($1, $2, '')
+       ON CONFLICT (id) DO NOTHING`,
+      [userId, email]
+    )
     const { rows } = await db.query(
       `UPDATE users
        SET plan = $1, subscription_status = $2, subscription_ends_at = $3,

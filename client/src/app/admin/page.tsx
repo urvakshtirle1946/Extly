@@ -7,6 +7,13 @@ import { BarChart3, Check, ChevronLeft, ChevronRight, CreditCard, FolderKanban, 
 type AdminUser = {
   id: string
   email: string
+  first_name: string | null
+  last_name: string | null
+  username: string | null
+  picture: string | null
+  is_suspended: boolean
+  total_sign_ins: number
+  last_signed_in: string | null
   plan: 'free' | 'pro' | 'business'
   subscription_status: 'active' | 'cancelled' | 'expired'
   subscription_ends_at: string | null
@@ -89,6 +96,7 @@ export default function AdminPage() {
       const result = await adminFetch(`/api/admin/users/${selected.id}/subscription`, {
         method: 'PATCH',
         body: JSON.stringify({
+          email: selected.email,
           plan: selected.plan,
           subscriptionStatus: selected.subscription_status,
           subscriptionEndsAt: selected.subscription_ends_at || null,
@@ -143,7 +151,7 @@ export default function AdminPage() {
         <section className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="overflow-hidden rounded-xl border border-neutral-800 bg-neutral-900/30">
             <div className="flex flex-col gap-3 border-b border-neutral-800 p-4 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-medium">Users</h2><p className="mt-0.5 text-xs text-neutral-500">Select a user to adjust their plan or credits.</p></div><form onSubmit={e => { e.preventDefault(); setPage(1); load() }} className="flex items-center rounded-lg border border-neutral-700 bg-black px-2"><Search size={15} className="text-neutral-500" /><input value={search} onChange={e => setSearch(e.target.value)} className="w-44 bg-transparent px-2 py-2 text-sm outline-none placeholder:text-neutral-600" placeholder="Search user" /></form></div>
-            <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-black/30 text-xs text-neutral-500"><tr><th className="px-4 py-3 font-medium">User</th><th className="px-4 py-3 font-medium">Plan</th><th className="px-4 py-3 font-medium">Credits</th><th className="px-4 py-3 font-medium">Subscription</th></tr></thead><tbody>{users.map(user => <tr key={user.id} onClick={() => { setSelected(user); setNotice('') }} className={`cursor-pointer border-t border-neutral-800/80 hover:bg-neutral-800/40 ${selected?.id === user.id ? 'bg-neutral-800/60' : ''}`}><td className="px-4 py-3"><p className="max-w-[240px] truncate font-medium">{user.email}</p><p className="mt-0.5 text-xs text-neutral-600">Joined {formatDate(user.created_at)}</p></td><td className="px-4 py-3 capitalize">{user.plan}</td><td className="px-4 py-3">{user.used_credits} / {user.total_credits}</td><td className="px-4 py-3"><span className={`rounded-full px-2 py-1 text-xs ${user.subscription_status === 'active' ? 'bg-emerald-950 text-emerald-300' : 'bg-neutral-800 text-neutral-400'}`}>{user.subscription_status}</span></td></tr>)}{!loading && !users.length && <tr><td colSpan={4} className="px-4 py-10 text-center text-neutral-500">No users found.</td></tr>}</tbody></table></div>
+            <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-black/30 text-xs text-neutral-500"><tr><th className="px-4 py-3 font-medium">User</th><th className="px-4 py-3 font-medium">Plan</th><th className="px-4 py-3 font-medium">Credits</th><th className="px-4 py-3 font-medium">Subscription</th></tr></thead><tbody>{users.map(user => <tr key={user.id} onClick={() => { setSelected(user); setNotice('') }} className={`cursor-pointer border-t border-neutral-800/80 hover:bg-neutral-800/40 ${selected?.id === user.id ? 'bg-neutral-800/60' : ''}`}><td className="px-4 py-3"><div className="flex items-center gap-2.5">{user.picture ? <img src={user.picture} alt="" className="h-8 w-8 rounded-full bg-neutral-800" /> : <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-800 text-xs font-semibold">{(user.first_name || user.email).slice(0, 1).toUpperCase()}</div>}<div className="min-w-0"><p className="max-w-[220px] truncate font-medium">{[user.first_name, user.last_name].filter(Boolean).join(' ') || user.username || user.email}</p><p className="max-w-[220px] truncate text-xs text-neutral-500">{user.email}</p></div></div><p className="mt-1.5 text-xs text-neutral-600">Joined {formatDate(user.created_at)} · {user.total_sign_ins} sign-ins{user.is_suspended ? ' · Suspended' : ''}</p></td><td className="px-4 py-3 capitalize">{user.plan}</td><td className="px-4 py-3">{user.used_credits} / {user.total_credits}</td><td className="px-4 py-3"><span className={`rounded-full px-2 py-1 text-xs ${user.subscription_status === 'active' ? 'bg-emerald-950 text-emerald-300' : 'bg-neutral-800 text-neutral-400'}`}>{user.subscription_status}</span></td></tr>)}{!loading && !users.length && <tr><td colSpan={4} className="px-4 py-10 text-center text-neutral-500">No users found.</td></tr>}</tbody></table></div>
             <div className="flex items-center justify-between border-t border-neutral-800 px-4 py-3 text-xs text-neutral-500"><span>{total} users</span><div className="flex items-center gap-2"><button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="rounded p-1 hover:bg-neutral-800 disabled:opacity-30"><ChevronLeft size={16} /></button><span>Page {page} of {pages}</span><button onClick={() => setPage(p => Math.min(pages, p + 1))} disabled={page === pages} className="rounded p-1 hover:bg-neutral-800 disabled:opacity-30"><ChevronRight size={16} /></button></div></div>
           </div>
           <SubscriptionEditor user={selected} saving={saving} onChange={setSelected} onSave={saveSubscription} />
