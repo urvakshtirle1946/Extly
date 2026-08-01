@@ -25,8 +25,7 @@ import {
   Zap,
   Check,
   Plus,
-  Loader2,
-  ShieldCheck
+  Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -70,7 +69,6 @@ const mockNavGroups: NavGroupData[] = [
 
 const mockBottomItems: NavItemData[] = [
   { id: 'billing', title: 'Billing', icon: CreditCard },
-  { id: 'admin', title: 'Admin panel', icon: ShieldCheck },
   { id: 'settings', title: 'Settings', icon: Settings, shortcut: '⌘,' },
   { id: 'logout', title: 'Log out', icon: LogOut },
 ];

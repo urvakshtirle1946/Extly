@@ -255,8 +255,6 @@ export default function DashboardContent() {
       logout()
     } else if (id === 'search') {
       setIsCommandPaletteOpen(true)
-    } else if (id === 'admin') {
-      router.push('/admin')
     } else if (id === 'home') {
       setActiveTab('projects')
       setSidebarActiveId('home')
