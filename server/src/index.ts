@@ -129,9 +129,9 @@ const requireAdminKey = (req: any, res: any, next: any) => {
   next()
 }
 
-app.get('/api/admin/overview', authMiddleware as any, requireAdminKey as any, handleGetAdminOverview as any)
-app.get('/api/admin/users', authMiddleware as any, requireAdminKey as any, handleGetAdminUsers as any)
-app.patch('/api/admin/users/:userId/subscription', authMiddleware as any, requireAdminKey as any, handleUpdateAdminSubscription as any)
+app.get('/api/admin/overview', requireAdminKey as any, handleGetAdminOverview as any)
+app.get('/api/admin/users', requireAdminKey as any, handleGetAdminUsers as any)
+app.patch('/api/admin/users/:userId/subscription', requireAdminKey as any, handleUpdateAdminSubscription as any)
 
 app.post('/api/admin/users/:userId/credits', requireAdminKey as any, async (req: any, res: any) => {
   const { userId } = req.params
