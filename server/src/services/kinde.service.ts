@@ -52,18 +52,31 @@ async function getManagementAccessToken() {
   accessTokenExpiresAt = Date.now() + Math.max(30, (payload.expires_in || 300) - 30) * 1000
   return accessToken
 }
+export async function getKindeUsers(search = ''): Promise<KindeUser[] | null> {
+  const clientId = process.env.KINDE_M2M_CLIENT_ID
+  const clientSecret = process.env.KINDE_M2M_CLIENT_SECRET
+  if (!clientId || !clientSecret) {
+    return null
+  }
 
-export async function getKindeUsers(search = ''): Promise<KindeUser[]> {
-  const domain = getKindeDomain()
-  const token = await getManagementAccessToken()
-  const endpoint = search.trim()
-    ? `${domain}/api/v1/search/users?${new URLSearchParams({ query: search.trim(), expand: 'identities,properties', page_size: '100' })}`
-    : `${domain}/api/v1/users?${new URLSearchParams({ page_size: '100' })}`
-  const response = await fetch(endpoint, {
-    headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-  })
+  try {
+    const domain = getKindeDomain()
+    const token = await getManagementAccessToken()
+    const endpoint = search.trim()
+      ? `${domain}/api/v1/search/users?${new URLSearchParams({ query: search.trim(), expand: 'identities,properties', page_size: '100' })}`
+      : `${domain}/api/v1/users?${new URLSearchParams({ page_size: '100' })}`
+    const response = await fetch(endpoint, {
+      headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+    })
 
-  if (!response.ok) throw new Error(`Unable to fetch users from Kinde (${response.status})`)
-  const payload = await response.json() as { users?: KindeUser[]; results?: KindeUser[]; data?: KindeUser[] }
-  return payload.users || payload.results || payload.data || []
+    if (!response.ok) {
+      console.warn(`[Kinde Service] Unable to fetch users from Kinde (${response.status})`)
+      return null
+    }
+    const payload = await response.json() as { users?: KindeUser[]; results?: KindeUser[]; data?: KindeUser[] }
+    return payload.users || payload.results || payload.data || []
+  } catch (error: any) {
+    console.warn(`[Kinde Service] Management API error: ${error.message}`)
+    return null
+  }
 }

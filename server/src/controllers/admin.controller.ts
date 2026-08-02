@@ -39,19 +39,62 @@ export async function handleGetAdminUsers(req: AuthenticatedRequest, res: Respon
 
   try {
     const kindeUsers = await getKindeUsers(search)
-    const userIds = kindeUsers.map(user => user.id)
-    const localUsers = userIds.length
-      ? await db.query(
-        `SELECT id, plan, subscription_status, subscription_ends_at, total_credits, used_credits, created_at, updated_at
-         FROM users WHERE id = ANY($1::varchar[])`,
-        [userIds]
-      )
-      : { rows: [] as any[] }
-    const localUsersById = new Map(localUsers.rows.map(user => [user.id, user]))
-    const users = kindeUsers.map(user => mergeKindeUser(user, localUsersById.get(user.id)))
-    const paginatedUsers = users.slice(offset, offset + limit)
 
-    res.json({ users: paginatedUsers, total: users.length, page, limit })
+    if (kindeUsers !== null) {
+      const userIds = kindeUsers.map(user => user.id)
+      const localUsers = userIds.length
+        ? await db.query(
+          `SELECT id, plan, subscription_status, subscription_ends_at, total_credits, used_credits, created_at, updated_at
+           FROM users WHERE id = ANY($1::varchar[])`,
+          [userIds]
+        )
+        : { rows: [] as any[] }
+      const localUsersById = new Map(localUsers.rows.map(user => [user.id, user]))
+      const users = kindeUsers.map(user => mergeKindeUser(user, localUsersById.get(user.id)))
+      const paginatedUsers = users.slice(offset, offset + limit)
+
+      return res.json({ users: paginatedUsers, total: users.length, page, limit })
+    }
+
+    // Fallback: Query PostgreSQL database if Kinde M2M API is not configured
+    let countQuery = 'SELECT COUNT(*)::int AS total FROM users'
+    let dataQuery = `SELECT id, email, plan, subscription_status, subscription_ends_at, total_credits, used_credits, created_at, updated_at
+                     FROM users`
+    const params: any[] = []
+
+    if (search) {
+      countQuery += ' WHERE email ILIKE $1'
+      dataQuery += ' WHERE email ILIKE $1'
+      params.push(`%${search}%`)
+    }
+
+    dataQuery += ` ORDER BY created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`
+
+    const [countResult, dataResult] = await Promise.all([
+      db.query(countQuery, params),
+      db.query(dataQuery, [...params, limit, offset]),
+    ])
+
+    const users = dataResult.rows.map(u => ({
+      id: u.id,
+      email: u.email,
+      first_name: null,
+      last_name: null,
+      username: null,
+      picture: null,
+      is_suspended: false,
+      total_sign_ins: 0,
+      last_signed_in: null,
+      plan: u.plan || 'free',
+      subscription_status: u.subscription_status || 'active',
+      subscription_ends_at: u.subscription_ends_at || null,
+      total_credits: u.total_credits ?? 10,
+      used_credits: u.used_credits ?? 0,
+      created_at: u.created_at,
+      updated_at: u.updated_at,
+    }))
+
+    res.json({ users, total: countResult.rows[0].total, page, limit })
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Unable to load users' })
   }
