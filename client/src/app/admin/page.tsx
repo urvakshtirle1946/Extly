@@ -68,9 +68,14 @@ export default function AdminPage() {
       setUsers(usersResult.users)
       setTotal(usersResult.total)
     } catch (err: any) {
-      setError(err.message || 'Unable to load admin data')
+      const msg = err.message || 'Unable to load admin data'
+      setError(msg)
       setOverview(null)
       setUsers([])
+      if (msg.includes('Invalid admin key') || msg.includes('Unauthorized')) {
+        window.sessionStorage.removeItem('admin-access-key')
+        setAdminKey('')
+      }
     } finally {
       setLoading(false)
     }
@@ -84,6 +89,13 @@ export default function AdminPage() {
     if (!value) return
     window.sessionStorage.setItem('admin-access-key', value)
     setAdminKey(value)
+    setError('')
+  }
+
+  const resetKey = () => {
+    window.sessionStorage.removeItem('admin-access-key')
+    setAdminKey('')
+    setKeyInput('')
     setError('')
   }
 
@@ -136,7 +148,10 @@ export default function AdminPage() {
       <header className="border-b border-neutral-800 bg-black/40">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
           <div className="flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-black"><ShieldCheck size={19} /></div><div><h1 className="font-semibold">Admin panel</h1><p className="text-xs text-neutral-500">User and subscription management</p></div></div>
-          <button onClick={load} disabled={loading} className="inline-flex items-center gap-2 rounded-lg border border-neutral-700 px-3 py-2 text-xs font-medium hover:bg-neutral-900 disabled:opacity-50"><RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh</button>
+          <div className="flex items-center gap-2">
+            <button onClick={load} disabled={loading} className="inline-flex items-center gap-2 rounded-lg border border-neutral-700 px-3 py-2 text-xs font-medium hover:bg-neutral-900 disabled:opacity-50"><RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh</button>
+            <button onClick={resetKey} className="inline-flex items-center gap-2 rounded-lg border border-neutral-700 px-3 py-2 text-xs font-medium text-neutral-400 hover:bg-neutral-900 hover:text-white">Change Key</button>
+          </div>
         </div>
       </header>
       <div className="mx-auto max-w-7xl px-5 py-8">
