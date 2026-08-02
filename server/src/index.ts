@@ -135,22 +135,20 @@ app.patch('/api/admin/users/:userId/subscription', requireAdminKey as any, handl
 
 app.post('/api/admin/users/:userId/credits', requireAdminKey as any, async (req: any, res: any) => {
   const { userId } = req.params
-  const { total_credits } = req.body
+  const { total_credits, used_credits, email } = req.body
 
   try {
-    await db.query(
-      `UPDATE users SET total_credits = $1 WHERE id = $2`,
-      [total_credits, userId]
-    )
-
+    const userEmail = email || `${userId}@promptex.tech`
     const { rows } = await db.query(
-      'SELECT id, total_credits, used_credits FROM users WHERE id = $1',
-      [userId]
+      `INSERT INTO users (id, email, password_hash, total_credits, used_credits, updated_at)
+       VALUES ($1, $2, '', $3, COALESCE($4, 0), CURRENT_TIMESTAMP)
+       ON CONFLICT (id) DO UPDATE
+       SET total_credits = EXCLUDED.total_credits,
+           used_credits = COALESCE(EXCLUDED.used_credits, users.used_credits),
+           updated_at = CURRENT_TIMESTAMP
+       RETURNING id, email, plan, subscription_status, total_credits, used_credits, created_at, updated_at`,
+      [userId, userEmail, total_credits, used_credits]
     )
-
-    if (rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' })
-    }
 
     res.json({ success: true, user: rows[0] })
   } catch (err: any) {

@@ -120,42 +120,38 @@ function mergeKindeUser(user: KindeUser, localUser?: any) {
     updated_at: localUser?.updated_at || null,
   }
 }
-
 export async function handleUpdateAdminSubscription(req: AuthenticatedRequest, res: Response) {
   const { userId } = req.params
-  const { email, plan, subscriptionStatus, subscriptionEndsAt, totalCredits, usedCredits } = req.body || {}
+  const { email, plan = 'free', subscriptionStatus = 'active', subscriptionEndsAt, totalCredits, usedCredits } = req.body || {}
 
-  if (!PLANS.has(plan)) return res.status(400).json({ error: 'Invalid plan' })
-  if (!SUBSCRIPTION_STATUSES.has(subscriptionStatus)) return res.status(400).json({ error: 'Invalid subscription status' })
   if (!Number.isInteger(totalCredits) || totalCredits < 0) return res.status(400).json({ error: 'Total credits must be a non-negative integer' })
-  if (!Number.isInteger(usedCredits) || usedCredits < 0 || usedCredits > totalCredits) {
-    return res.status(400).json({ error: 'Used credits must be between zero and total credits' })
+  if (!Number.isInteger(usedCredits) || usedCredits < 0) {
+    return res.status(400).json({ error: 'Used credits must be a non-negative integer' })
   }
 
   const endsAt = subscriptionEndsAt ? new Date(subscriptionEndsAt) : null
-  if (endsAt && Number.isNaN(endsAt.getTime())) return res.status(400).json({ error: 'Invalid subscription end date' })
 
   try {
-    if (typeof email !== 'string' || !email) return res.status(400).json({ error: 'A Kinde user email is required' })
-    await db.query(
-      `INSERT INTO users (id, email, password_hash)
-       VALUES ($1, $2, '')
-       ON CONFLICT (id) DO NOTHING`,
-      [userId, email]
-    )
+    const userEmail = (typeof email === 'string' && email.trim()) ? email.trim() : `${userId}@promptex.tech`
+
+    // Upsert into users table to support instant credit assignment for any user
     const { rows } = await db.query(
-      `UPDATE users
-       SET plan = $1, subscription_status = $2, subscription_ends_at = $3,
-           total_credits = $4, used_credits = $5, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $6
+      `INSERT INTO users (id, email, password_hash, plan, subscription_status, subscription_ends_at, total_credits, used_credits, updated_at)
+       VALUES ($1, $2, '', $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)
+       ON CONFLICT (id) DO UPDATE
+       SET total_credits = EXCLUDED.total_credits,
+           used_credits = EXCLUDED.used_credits,
+           plan = EXCLUDED.plan,
+           subscription_status = EXCLUDED.subscription_status,
+           subscription_ends_at = EXCLUDED.subscription_ends_at,
+           updated_at = CURRENT_TIMESTAMP
        RETURNING id, email, plan, subscription_status, subscription_ends_at,
                  total_credits, used_credits, created_at, updated_at`,
-      [plan, subscriptionStatus, endsAt, totalCredits, usedCredits, userId]
+      [userId, userEmail, plan, subscriptionStatus, endsAt, totalCredits, usedCredits]
     )
 
-    if (!rows.length) return res.status(404).json({ error: 'User not found' })
     res.json({ user: rows[0] })
   } catch (error: any) {
-    res.status(500).json({ error: error.message || 'Unable to update subscription' })
+    res.status(500).json({ error: error.message || 'Unable to update account credits' })
   }
 }
